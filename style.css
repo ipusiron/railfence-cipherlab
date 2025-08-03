@@ -134,6 +134,12 @@ input[type="checkbox"] {
   border: 1px solid #d0d4d8;
 }
 
+#warning-area.warning {
+  color: #f39c12;
+  background: #fef9e7;
+  border: 1px solid #fcf4a3;
+}
+
 #warning-area.error {
   color: #ff6b6b;
   background: #fff0f0;

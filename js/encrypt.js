@@ -24,8 +24,17 @@ const sampleTexts = {
 function initializeEncryptTab() {
   // 平文入力のイベントリスナー
   document.getElementById("plaintext").addEventListener("input", (e) => {
-    updateWarning(e.target.value);
+    const canContinue = updateWarning(e.target.value);
     updateEncryptButton(e.target.value);
+    
+    // 文字数制限チェック
+    if (!canContinue) {
+      // 制限を超えた場合、最後の文字を削除
+      e.target.value = e.target.value.slice(0, CHARACTER_LIMITS.HARD_LIMIT);
+      updateWarning(e.target.value);
+      updateEncryptButton(e.target.value);
+      showToast(e.target, "文字数制限に達しました", "error");
+    }
     
     // リアルタイム暗号化
     if (document.getElementById("realtimeMode").checked && e.target.value.trim().length > 0) {
@@ -348,6 +357,12 @@ function loadSample(sampleNumber) {
   const sampleText = sampleTexts[sampleNumber];
   
   if (sampleText) {
+    // 文字数制限チェック
+    if (sampleText.length > CHARACTER_LIMITS.HARD_LIMIT) {
+      showToast(document.querySelector('.sample-btn'), "サンプルテキストが文字数制限を超えています", "error");
+      return;
+    }
+    
     plaintextArea.value = sampleText;
     
     // イベントを手動で発火してリアルタイム更新をトリガー

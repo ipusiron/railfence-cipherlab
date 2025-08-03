@@ -22,30 +22,54 @@ function cleanText(text, removeSpace, removeSymbol) {
   return cleaned;
 }
 
-// 警告表示機能
+// 文字数制限の定数
+const CHARACTER_LIMITS = {
+  SOFT_WARNING: 100,
+  HARD_LIMIT: 500,
+  INFO_START: 50
+};
+
+// 警告表示機能（文字数制限を含む）
 function updateWarning(text) {
   let warning = [];
-  let hasNewline = false;
+  let warningLevel = "info"; // info, warning, error
+  const textLength = text.length;
   
+  // 文字数チェック
+  if (textLength >= CHARACTER_LIMITS.INFO_START) {
+    if (textLength >= CHARACTER_LIMITS.HARD_LIMIT) {
+      warning.push(`文字数制限に達しました (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
+      warningLevel = "error";
+    } else if (textLength >= 400) {
+      warning.push(`文字数制限に近づいています (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
+      warningLevel = "warning";
+    } else if (textLength >= CHARACTER_LIMITS.SOFT_WARNING) {
+      warning.push(`文字数が多いです (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
+      warningLevel = "warning";
+    } else {
+      warning.push(`文字数: ${textLength}/${CHARACTER_LIMITS.HARD_LIMIT}`);
+    }
+  }
+  
+  // 既存の警告チェック
   if (/\s/.test(text)) warning.push("空白が含まれています");
   if (/[^\p{L}\p{N}\s]/u.test(text)) warning.push("記号が含まれています");
   if (/\n/.test(text)) {
     warning.push("改行は無視して処理されます");
-    hasNewline = true;
+    if (warningLevel !== "error") warningLevel = "error";
   }
   
   const warningArea = document.getElementById("warning-area");
   warningArea.textContent = warning.join(" / ");
   
-  if (hasNewline) {
-    warningArea.classList.add("error");
-    warningArea.classList.remove("info");
-  } else if (warning.length > 0) {
-    warningArea.classList.add("info");
-    warningArea.classList.remove("error");
-  } else {
-    warningArea.classList.remove("error", "info");
+  // スタイル適用
+  warningArea.classList.remove("error", "info", "warning");
+  if (warning.length > 0) {
+    warningArea.classList.add(warningLevel);
   }
+  
+  // 文字数制限チェック（入力制御用）
+  return textLength < CHARACTER_LIMITS.HARD_LIMIT;
 }
 
 // コピー機能
