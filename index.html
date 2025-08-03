@@ -20,6 +20,11 @@
 
   <div class="tab-content" id="encrypt">
     <h2>暗号化</h2>
+    <div class="sample-buttons">
+      <button class="sample-btn" onclick="loadSample(1)">サンプル1</button>
+      <button class="sample-btn" onclick="loadSample(2)">サンプル2</button>
+      <button class="sample-btn" onclick="clearText()">クリア</button>
+    </div>
     <textarea id="plaintext" rows="4" placeholder="平文を入力してください"></textarea>
     <div id="warning-area"></div>
     <label><input type="checkbox" id="removeSpace" /> 空白を除いて処理する</label>
@@ -107,6 +112,8 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/encrypt.js"></script>
+  <script src="js/decrypt.js"></script>
 </body>
 </html>

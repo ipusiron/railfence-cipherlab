@@ -1,113 +1,120 @@
-// script.js
+// encrypt.js - 暗号化タブの機能
 
-document.querySelectorAll(".tab-button").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+// アニメーション状態管理
+let animationState = {
+  isPlaying: false,
+  currentStep: 0,
+  intervalId: null,
+  railMatrix: null,
+  sequence: [],
+  cleaned: ""
+};
 
-    const tab = btn.dataset.tab;
-    document.querySelectorAll(".tab-content").forEach(c => {
-      c.classList.add("hidden");
-    });
-    document.getElementById(tab).classList.remove("hidden");
+// DOM読み込み後に初期化
+document.addEventListener('DOMContentLoaded', function() {
+  initializeEncryptTab();
+});
+
+// サンプル平文データ
+const sampleTexts = {
+  1: "Hello, world!",
+  2: "アス　ゴゴロクジニ　ヨコハマエキニシグチニ　シュウゴウ"
+};
+
+function initializeEncryptTab() {
+  // 平文入力のイベントリスナー
+  document.getElementById("plaintext").addEventListener("input", (e) => {
+    updateWarning(e.target.value);
+    updateEncryptButton(e.target.value);
+    
+    // リアルタイム暗号化
+    if (document.getElementById("realtimeMode").checked && e.target.value.trim().length > 0) {
+      performRealtimeEncryption();
+    } else if (e.target.value.trim().length === 0) {
+      clearEncryptionDisplay();
+    }
   });
-});
 
-function cleanText(text, removeSpace, removeSymbol) {
-  let cleaned = text.replace(/\n/g, "");
-  if (removeSpace) cleaned = cleaned.replace(/\s/g, "");
-  if (removeSymbol) cleaned = cleaned.replace(/[^\p{L}\p{N}]/gu, "");
-  return cleaned;
-}
-
-function updateWarning(text) {
-  let warning = [];
-  let hasNewline = false;
-  
-  if (/\s/.test(text)) warning.push("空白が含まれています");
-  if (/[^\p{L}\p{N}\s]/u.test(text)) warning.push("記号が含まれています");
-  if (/\n/.test(text)) {
-    warning.push("改行は無視して処理されます");
-    hasNewline = true;
-  }
-  
-  const warningArea = document.getElementById("warning-area");
-  warningArea.textContent = warning.join(" / ");
-  
-  if (hasNewline) {
-    warningArea.classList.add("error");
-    warningArea.classList.remove("info");
-  } else if (warning.length > 0) {
-    warningArea.classList.add("info");
-    warningArea.classList.remove("error");
-  } else {
-    warningArea.classList.remove("error", "info");
-  }
-}
-
-document.getElementById("plaintext").addEventListener("input", (e) => {
-  updateWarning(e.target.value);
-  updateEncryptButton(e.target.value);
-  
-  // リアルタイム暗号化
-  if (document.getElementById("realtimeMode").checked && e.target.value.trim().length > 0) {
-    performRealtimeEncryption();
-  } else if (e.target.value.trim().length === 0) {
-    clearEncryptionDisplay();
-  }
-});
-
-// オプション変更時もリアルタイム更新
-document.getElementById("removeSpace").addEventListener("change", () => {
-  if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-    performRealtimeEncryption();
-  }
-});
-
-document.getElementById("removeSymbol").addEventListener("change", () => {
-  if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-    performRealtimeEncryption();
-  }
-});
-
-document.getElementById("railCount").addEventListener("change", () => {
-  if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-    performRealtimeEncryption();
-  } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-    // リアルタイムモードでない場合も、既に暗号化結果が表示されていれば更新
-    if (document.getElementById("cipherResult").innerHTML.trim() !== "") {
-      encrypt();
-    }
-  }
-});
-
-document.getElementById("method").addEventListener("change", () => {
-  if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-    performRealtimeEncryption();
-  } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-    // リアルタイムモードでない場合も、既に暗号化結果が表示されていれば更新
-    if (document.getElementById("cipherResult").innerHTML.trim() !== "") {
-      encrypt();
-    }
-  }
-});
-
-document.getElementById("realtimeMode").addEventListener("change", (e) => {
-  const encryptBtn = document.getElementById("encryptBtn");
-  const plaintext = document.getElementById("plaintext").value;
-  
-  if (e.target.checked) {
-    encryptBtn.textContent = "暗号化を更新";
-    if (plaintext.trim().length > 0) {
+  // オプション変更時もリアルタイム更新
+  document.getElementById("removeSpace").addEventListener("change", () => {
+    if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
       performRealtimeEncryption();
     }
-  } else {
-    encryptBtn.textContent = "暗号化する";
-  }
-  
-  // ボタンの有効/無効状態を更新
-  updateEncryptButton(plaintext);
-});
+  });
+
+  document.getElementById("removeSymbol").addEventListener("change", () => {
+    if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
+      performRealtimeEncryption();
+    }
+  });
+
+  document.getElementById("railCount").addEventListener("change", () => {
+    if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
+      performRealtimeEncryption();
+    } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
+      // リアルタイムモードでない場合も、既に暗号化結果が表示されていれば更新
+      if (document.getElementById("cipherResult").innerHTML.trim() !== "") {
+        encrypt();
+      }
+    }
+  });
+
+  document.getElementById("method").addEventListener("change", () => {
+    if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
+      performRealtimeEncryption();
+    } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
+      // リアルタイムモードでない場合も、既に暗号化結果が表示されていれば更新
+      if (document.getElementById("cipherResult").innerHTML.trim() !== "") {
+        encrypt();
+      }
+    }
+  });
+
+  document.getElementById("realtimeMode").addEventListener("change", (e) => {
+    const encryptBtn = document.getElementById("encryptBtn");
+    const plaintext = document.getElementById("plaintext").value;
+    
+    if (e.target.checked) {
+      encryptBtn.textContent = "暗号化を更新";
+      if (plaintext.trim().length > 0) {
+        performRealtimeEncryption();
+      }
+    } else {
+      encryptBtn.textContent = "暗号化する";
+    }
+    
+    // ボタンの有効/無効状態を更新
+    updateEncryptButton(plaintext);
+  });
+
+  // アニメーション速度調整
+  document.getElementById("animationSpeed").addEventListener("input", (e) => {
+    document.getElementById("speedDisplay").textContent = e.target.value + "ms";
+    
+    if (animationState.isPlaying) {
+      clearInterval(animationState.intervalId);
+      const speed = parseInt(e.target.value);
+      
+      animationState.intervalId = setInterval(() => {
+        if (animationState.currentStep < animationState.sequence.length) {
+          const step = animationState.sequence[animationState.currentStep];
+          const cell = document.getElementById(`cell-${step.rail}-${step.col}`);
+          if (cell) {
+            cell.classList.remove('hidden-cell');
+            cell.classList.add('animate-appear');
+          }
+          animationState.currentStep++;
+        } else {
+          clearInterval(animationState.intervalId);
+          animationState.isPlaying = false;
+          const playBtn = document.getElementById("playBtn");
+          playBtn.textContent = "▶ 再生";
+          playBtn.disabled = true;  // アニメーション完了時は無効化
+        }
+      }, speed);
+    }
+  });
+}
 
 function updateEncryptButton(text) {
   const encryptBtn = document.getElementById("encryptBtn");
@@ -135,15 +142,6 @@ function clearEncryptionDisplay() {
   document.getElementById("cipherResult").innerHTML = "";
   document.getElementById("animationControls").classList.add("hidden");
 }
-
-let animationState = {
-  isPlaying: false,
-  currentStep: 0,
-  intervalId: null,
-  railMatrix: null,
-  sequence: [],
-  cleaned: ""
-};
 
 function encryptWithoutAnimation() {
   const text = document.getElementById("plaintext").value;
@@ -344,115 +342,32 @@ function resetAnimation() {
   }
 }
 
-document.getElementById("animationSpeed").addEventListener("input", (e) => {
-  document.getElementById("speedDisplay").textContent = e.target.value + "ms";
+// サンプル平文読み込み機能
+function loadSample(sampleNumber) {
+  const plaintextArea = document.getElementById("plaintext");
+  const sampleText = sampleTexts[sampleNumber];
   
-  if (animationState.isPlaying) {
-    clearInterval(animationState.intervalId);
-    const speed = parseInt(e.target.value);
+  if (sampleText) {
+    plaintextArea.value = sampleText;
     
-    animationState.intervalId = setInterval(() => {
-      if (animationState.currentStep < animationState.sequence.length) {
-        const step = animationState.sequence[animationState.currentStep];
-        const cell = document.getElementById(`cell-${step.rail}-${step.col}`);
-        if (cell) {
-          cell.classList.remove('hidden-cell');
-          cell.classList.add('animate-appear');
-        }
-        animationState.currentStep++;
-      } else {
-        clearInterval(animationState.intervalId);
-        animationState.isPlaying = false;
-        const playBtn = document.getElementById("playBtn");
-        playBtn.textContent = "▶ 再生";
-        playBtn.disabled = true;  // アニメーション完了時は無効化
-      }
-    }, speed);
+    // イベントを手動で発火してリアルタイム更新をトリガー
+    const event = new Event('input', { bubbles: true });
+    plaintextArea.dispatchEvent(event);
+    
+    // フォーカスを当てる
+    plaintextArea.focus();
   }
-});
-
-function copyToClipboard(text, event) {
-  const btn = event.target;
-  navigator.clipboard.writeText(text).then(() => {
-    showToast(btn, "クリップボードにコピーしました！");
-  }).catch(() => {
-    showToast(btn, "コピーに失敗しました", "error");
-  });
 }
 
-function showToast(element, message, type = "success") {
-  const existingToast = document.querySelector('.toast');
-  if (existingToast) {
-    existingToast.remove();
-  }
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
+// テキストクリア機能
+function clearText() {
+  const plaintextArea = document.getElementById("plaintext");
+  plaintextArea.value = "";
   
-  const rect = element.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  // イベントを手動で発火してクリア処理をトリガー
+  const event = new Event('input', { bubbles: true });
+  plaintextArea.dispatchEvent(event);
   
-  toast.style.position = 'absolute';
-  toast.style.left = rect.left + (rect.width / 2) + 'px';
-  toast.style.top = (rect.top + scrollTop - 10) + 'px';
-  toast.style.transform = 'translate(-50%, -100%)';
-  
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 10);
-  
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => {
-      toast.remove();
-    }, 300);
-  }, 2000);
-}
-
-function decrypt() {
-  const text = document.getElementById("ciphertext").value;
-  const railCount = parseInt(document.getElementById("decryptRailCount").value);
-  const method = document.getElementById("decryptMethod").value;
-  let len = text.length;
-  let pattern = Array(len).fill(0);
-  let index = 0;
-  let direction = 1;
-
-  // まず、各文字がどのレールに属するかを計算
-  for (let i = 0; i < len; i++) {
-    pattern[i] = index;
-    if (method === "zigzag") {
-      if (index === 0) direction = 1;
-      else if (index === railCount - 1) direction = -1;
-      index += direction;
-    } else {
-      index = (index + 1) % railCount;
-    }
-  }
-
-  let railLengths = Array(railCount).fill(0);
-  for (let i = 0; i < len; i++) {
-    railLengths[pattern[i]]++;
-  }
-
-  let rails = [];
-  let pos = 0;
-  for (let r = 0; r < railCount; r++) {
-    rails[r] = text.slice(pos, pos + railLengths[r]).split("");
-    pos += railLengths[r];
-  }
-
-  let result = "";
-  let railPos = Array(railCount).fill(0);
-  for (let i = 0; i < len; i++) {
-    const r = pattern[i];
-    result += rails[r][railPos[r]++];
-  }
-
-  const display = rails.map(r => r.join(" ")).join("\n");
-  document.getElementById("decryptDisplay").textContent = display;
-  document.getElementById("plainResult").textContent = "復号結果: " + result;
+  // フォーカスを当てる
+  plaintextArea.focus();
 }
