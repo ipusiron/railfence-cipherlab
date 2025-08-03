@@ -16,6 +16,7 @@
     <button class="tab-button active" data-tab="encrypt">暗号化</button>
     <button class="tab-button" data-tab="decrypt">復号</button>
     <button class="tab-button" data-tab="study">座学</button>
+    <button class="tab-button" data-tab="lab">実験室</button>
   </div>
 
   <div class="tab-content" id="encrypt">
@@ -77,7 +78,20 @@
 
   <div class="tab-content hidden" id="decrypt">
     <h2>復号</h2>
+    
+    <div class="sync-controls-top">
+      <button id="syncFromEncrypt" onclick="syncFromEncryptTab()">🔄 暗号化タブの設定を同期</button>
+      <span id="syncStatus" class="sync-status"></span>
+    </div>
+    
+    <div class="sample-buttons">
+      <button class="sample-btn" onclick="loadDecryptSample(1)">サンプル1</button>
+      <button class="sample-btn" onclick="loadDecryptSample(2)">サンプル2</button>
+      <button class="sample-btn" onclick="clearDecryptText()">クリア</button>
+    </div>
     <textarea id="ciphertext" rows="4" placeholder="暗号文を入力してください"></textarea>
+    <div id="decryptWarningArea"></div>
+    
     <div>
       <label>レール数:
         <select id="decryptRailCount">
@@ -95,9 +109,29 @@
         </select>
       </label>
     </div>
-    <button onclick="decrypt()">復号する</button>
+
+    <label>
+      <input type="checkbox" id="decryptRealtimeMode" checked> リアルタイム復号
+    </label>
+    <button id="decryptBtn" onclick="decrypt()" disabled>復号する</button>
+    
+    <div id="decryptAnimationControls" class="animation-controls hidden">
+      <button id="decryptPlayBtn" onclick="toggleDecryptAnimation()">▶ 再生</button>
+      <button onclick="resetDecryptAnimation()">⏹ リセット</button>
+      <label>速度:
+        <input type="range" id="decryptAnimationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります">
+        <span id="decryptSpeedDisplay">100ms</span>
+      </label>
+    </div>
     <div id="decryptDisplay"></div>
+    <div class="readonly-box" id="decryptIntermediateText"></div>
     <div id="plainResult"></div>
+    
+    <div id="decryptExportControls" class="export-controls hidden">
+      <button onclick="exportDecryptAsImage()">📷 画像で保存</button>
+      <button onclick="exportDecryptAsText()">📄 テキストで保存</button>
+      <button onclick="printDecryptRailGrid()">🖨 印刷</button>
+    </div>
   </div>
 
   <div class="tab-content hidden" id="study">
@@ -112,6 +146,78 @@
     </ul>
   </div>
 
+  <div class="tab-content hidden" id="lab">
+    <h2>実験室</h2>
+    <p>レールフェンス暗号の様々な実験を行うことができます。</p>
+    
+    <div class="experiment-section">
+      <h3>🔬 総当たり解読実験</h3>
+      <p>暗号文に対して様々なレール数・方式で復号を試行し、可能性のある平文を表示します。</p>
+      <div class="experiment-info">
+        <details>
+          <summary>📊 スコアリング方式について</summary>
+          <ul>
+            <li><strong>母音比率:</strong> 自然な言語の母音比率（20-60%）に近いほど高得点</li>
+            <li><strong>連続文字:</strong> 同じ文字の連続が少ないほど高得点</li>
+            <li><strong>単語パターン:</strong> 一般的な英単語や日本語パターンを含むほど高得点</li>
+            <li><strong>空白・記号:</strong> 適度な空白や記号があるほど高得点</li>
+          </ul>
+          <p><small>※ スコアは参考値です。実際の解読では文脈も重要な判断材料となります。</small></p>
+        </details>
+      </div>
+      
+      <div class="experiment-input">
+        <label>解読したい暗号文:</label>
+        <textarea id="labCiphertext" rows="3" placeholder="解読したい暗号文を入力してください"></textarea>
+      </div>
+      
+      <div class="experiment-controls">
+        <label>試行するレール数:
+          <select id="labRailRange">
+            <option value="2-6">2-6レール</option>
+            <option value="2-3">2-3レール</option>
+            <option value="2-4">2-4レール</option>
+            <option value="3-5">3-5レール</option>
+            <option value="4-6">4-6レール</option>
+          </select>
+        </label>
+        <label>
+          <input type="checkbox" id="labBothMethods" checked> 両方式を試行
+        </label>
+      </div>
+      
+      <button id="bruteForceBtn" onclick="performBruteForce()">🔍 総当たり解読開始</button>
+      
+      <div id="bruteForceResults" class="experiment-results"></div>
+    </div>
+    
+    <div class="experiment-section">
+      <h3>📊 統計実験</h3>
+      <p>異なる設定での暗号化パターンを比較分析します。</p>
+      <div class="experiment-info">
+        <details>
+          <summary>🔍 この実験で分かること</summary>
+          <ul>
+            <li><strong>最適な鍵の選択:</strong> 入力した平文に対して、どのレール数・方式が最も効果的に元の文字順序を隠蔽するかを比較</li>
+            <li><strong>文字の移動距離:</strong> 各設定で文字がどれだけ元の位置から移動するかを数値化（大きいほど安全）</li>
+            <li><strong>エントロピー変化:</strong> 暗号化により文字分布がどれだけランダムになるかを測定</li>
+            <li><strong>セキュリティレベル:</strong> 文字長や内容に応じた最適な暗号化強度の判定</li>
+          </ul>
+          <p><small>💡 <strong>実用例:</strong> 短いメッセージには高いレール数、長いメッセージには方式2（交互）が効果的な場合が多いです。</small></p>
+        </details>
+      </div>
+      
+      <div class="experiment-input">
+        <label>分析したい平文:</label>
+        <textarea id="labPlaintext" rows="3" placeholder="分析したい平文を入力してください"></textarea>
+      </div>
+      
+      <button onclick="performStatistics()">📈 統計分析開始</button>
+      
+      <div id="statisticsResults" class="experiment-results"></div>
+    </div>
+  </div>
+
   <footer>
     <div class="footer">
       🔗 GitHubリポジトリはこちら（ <a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank">ipusiron/railfence-cipherlab</a> ）
@@ -121,5 +227,6 @@
   <script src="js/common.js"></script>
   <script src="js/encrypt.js"></script>
   <script src="js/decrypt.js"></script>
+  <script src="js/lab.js"></script>
 </body>
 </html>

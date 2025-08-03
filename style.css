@@ -113,7 +113,8 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-#warning-area {
+#warning-area,
+#decryptWarningArea {
   font-size: 0.9rem;
   margin: 0;
   min-height: 0;
@@ -121,26 +122,30 @@ input[type="checkbox"] {
   font-weight: 500;
 }
 
-#warning-area:not(:empty) {
+#warning-area:not(:empty),
+#decryptWarningArea:not(:empty) {
   margin: 0.5rem 0;
   min-height: 1.2rem;
   padding: 0.5rem;
   border-radius: 6px;
 }
 
-#warning-area.info {
+#warning-area.info,
+#decryptWarningArea.info {
   color: #666;
   background: #f0f4f8;
   border: 1px solid #d0d4d8;
 }
 
-#warning-area.warning {
+#warning-area.warning,
+#decryptWarningArea.warning {
   color: #f39c12;
   background: #fef9e7;
   border: 1px solid #fcf4a3;
 }
 
-#warning-area.error {
+#warning-area.error,
+#decryptWarningArea.error {
   color: #ff6b6b;
   background: #fff0f0;
   border: 1px solid #ffdddd;
@@ -178,6 +183,18 @@ input[type="checkbox"] {
 
 #intermediateText::before {
   content: "レールから読み取った順序:";
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: white;
+  padding: 0 5px;
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: 600;
+}
+
+#decryptIntermediateText::before {
+  content: "復号過程 - レール配置:";
   position: absolute;
   top: -10px;
   left: 10px;
@@ -545,6 +562,205 @@ button:disabled {
   box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
 }
 
+/* Lab tab styles */
+.experiment-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.experiment-section h3 {
+  margin-top: 0;
+  color: #4a90e2;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.experiment-input {
+  margin: 1rem 0;
+}
+
+.experiment-input label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.experiment-info {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f0f4f8;
+  border-radius: 6px;
+  border: 1px solid #d0d4d8;
+}
+
+.experiment-info details {
+  margin: 0;
+}
+
+.experiment-info summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #4a90e2;
+  padding: 0.5rem 0;
+  outline: none;
+}
+
+.experiment-info summary:hover {
+  color: #357ab8;
+}
+
+.experiment-info ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.experiment-info li {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.experiment-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.experiment-results {
+  margin-top: 1.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.lab-results-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lab-result-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.lab-result-row:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lab-result-row.high-score {
+  border-left: 4px solid #28a745;
+}
+
+.lab-result-row.medium-score {
+  border-left: 4px solid #ffc107;
+}
+
+.lab-result-row.low-score {
+  border-left: 4px solid #dc3545;
+}
+
+.lab-result-info {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lab-result-text {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  background: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.lab-score {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.lab-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.lab-stat-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.lab-stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.lab-stat-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem;
+}
+
+.lab-stat-header h5 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.lab-stat-content {
+  padding: 1rem;
+}
+
+.lab-stat-content p {
+  margin: 0 0 1rem 0;
+  word-break: break-all;
+  font-family: 'Courier New', monospace;
+  background: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.lab-stat-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.metric-value {
+  font-weight: 600;
+  color: #4a90e2;
+}
+
+.lab-summary {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.lab-summary h5 {
+  margin-top: 0;
+  color: #4a90e2;
+}
+
 @media print {
   .rail-grid {
     background: white !important;
@@ -566,4 +782,45 @@ button:disabled {
     font-weight: bold !important;
     color: #000 !important;
   }
+}
+
+.sync-controls-top {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+#syncFromEncrypt {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+#syncFromEncrypt:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.sync-status {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.sync-status.success {
+  color: #28a745;
+}
+
+.sync-status.error {
+  color: #dc3545;
 }
