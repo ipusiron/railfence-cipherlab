@@ -1,0 +1,12 @@
+# Claude
+.claude/settings.local.json
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# その他
+*.bak
+*.tmp

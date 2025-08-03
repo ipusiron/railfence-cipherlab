@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RailFence CipherLab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>RailFence CipherLab</h1>
+    <p>レールフェンス暗号を視覚的に学ぶツール</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-button active" data-tab="encrypt">暗号化</button>
+    <button class="tab-button" data-tab="decrypt">復号</button>
+    <button class="tab-button" data-tab="study">座学</button>
+  </div>
+
+  <div class="tab-content" id="encrypt">
+    <h2>暗号化</h2>
+    <textarea id="plaintext" rows="4" placeholder="平文を入力してください"></textarea>
+    <div id="warning-area"></div>
+    <label><input type="checkbox" id="removeSpace" /> 空白を除いて処理する</label>
+    <label><input type="checkbox" id="removeSymbol" /> 記号を除いて処理する</label>
+
+    <div>
+      <label>レール数:
+        <select id="railCount">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+      <label>方式:
+        <select id="method">
+          <option value="sequential">方式1（順次）</option>
+          <option value="zigzag">方式2（交互）</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="readonly-box" id="cleanedText"></div>
+    <button onclick="encrypt()">暗号化する</button>
+    <div id="railDisplay"></div>
+    <div id="cipherResult"></div>
+  </div>
+
+  <div class="tab-content hidden" id="decrypt">
+    <h2>復号</h2>
+    <textarea id="ciphertext" rows="4" placeholder="暗号文を入力してください"></textarea>
+    <div>
+      <label>レール数:
+        <select id="decryptRailCount">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+      <label>方式:
+        <select id="decryptMethod">
+          <option value="sequential">方式1（順次）</option>
+          <option value="zigzag">方式2（交互）</option>
+        </select>
+      </label>
+    </div>
+    <button onclick="decrypt()">復号する</button>
+    <div id="decryptDisplay"></div>
+    <div id="plainResult"></div>
+  </div>
+
+  <div class="tab-content hidden" id="study">
+    <h2>レールフェンス暗号とは？</h2>
+    <p>転置暗号の一種で、文字をレール状に並べて並び順を変えることで暗号化します。</p>
+    <ul>
+      <li>方式1は縦列転置暗号と同じ構造を持ちます。</li>
+      <li>方式2は文字を上下交互に移動させる蛇行構造です。</li>
+      <li>復号は文字の配置構造を再現する必要があるため、暗号化よりもやや複雑です。</li>
+      <li>解読の際には、レール数・方式・開始位置など不明点が多く、総当たりが有効な手段になります。</li>
+      <li>冗字があると復元精度が下がる場合があります。</li>
+    </ul>
+  </div>
+
+  <footer>
+    <div class="footer">
+      🔗 GitHubリポジトリはこちら（ <a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank">ipusiron/railfence-cipherlab</a> ）
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
