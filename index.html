@@ -8,8 +8,13 @@
 </head>
 <body>
   <header>
-    <h1>RailFence CipherLab</h1>
-    <p>レールフェンス暗号を視覚的に学ぶツール</p>
+    <div class="header-content">
+      <div class="header-text">
+        <h1>RailFence CipherLab</h1>
+        <p>レールフェンス暗号を視覚的に学ぶツール</p>
+      </div>
+      <button class="help-button" onclick="openHelpModal()" title="ヘルプ">?</button>
+    </div>
   </header>
 
   <div class="tabs">
@@ -135,15 +140,183 @@
   </div>
 
   <div class="tab-content hidden" id="study">
-    <h2>レールフェンス暗号とは？</h2>
-    <p>転置暗号の一種で、文字をレール状に並べて並び順を変えることで暗号化します。</p>
-    <ul>
-      <li>方式1は縦列転置暗号と同じ構造を持ちます。</li>
-      <li>方式2は文字を上下交互に移動させる蛇行構造です。</li>
-      <li>復号は文字の配置構造を再現する必要があるため、暗号化よりもやや複雑です。</li>
-      <li>解読の際には、レール数・方式・開始位置など不明点が多く、総当たりが有効な手段になります。</li>
-      <li>冗字があると復元精度が下がる場合があります。</li>
-    </ul>
+    <h2>📚 レールフェンス暗号について学ぼう</h2>
+    
+    <div class="study-section">
+      <h3>🔒 レールフェンス暗号とは？</h3>
+      <p>レールフェンス暗号（Rail Fence Cipher）は、<strong>転置式暗号</strong>の一種で、文字をレール（鉄道のレール）状に並べて並び順を変えることで暗号化する古典暗号です。</p>
+      
+      <div class="study-highlight">
+        <h4>💡 基本的な仕組み</h4>
+        <ol>
+          <li>平文の文字を複数のレール（行）に配置</li>
+          <li>各レールから順番に文字を読み取り</li>
+          <li>読み取った順序で文字を並べて暗号文を作成</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="study-section">
+      <h3>🚂 歴史と背景</h3>
+      <p>レールフェンス暗号は古代から使われている転置式暗号の一つで、その名前は文字の配置パターンが鉄道のレールに似ていることに由来します。</p>
+      <ul>
+        <li><strong>古典暗号</strong>：コンピュータ以前の時代から使用</li>
+        <li><strong>手計算可能</strong>：紙とペンがあれば実行できる</li>
+        <li><strong>教育用途</strong>：暗号学の基礎概念を学ぶのに適している</li>
+        <li><strong>現代での位置付け</strong>：実用性は低いが、暗号学習の入門として重要</li>
+      </ul>
+    </div>
+
+    <div class="study-section">
+      <h3>⚙️ 暗号化方式の詳細</h3>
+      
+      <h4>🔹 方式1（順次配置）</h4>
+      <div class="method-explanation">
+        <p>文字を順番に各レールに配置していく方式です。縦列転置暗号と同じ構造を持ちます。</p>
+        <div class="example-box">
+          <strong>例：</strong> "HELLO" を3レールで暗号化<br><br>
+          <div class="rail-example">
+            <div class="rail-example-grid">
+              <div class="rail-label">Rail 1:</div>
+              <div class="rail-cell filled">H</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">L</div>
+              <div class="rail-cell empty">-</div>
+              
+              <div class="rail-label">Rail 2:</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">E</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">O</div>
+              
+              <div class="rail-label">Rail 3:</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">L</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+            </div>
+          </div>
+          <strong>結果：</strong> "HL" + "EO" + "L" = "HLEOL"
+        </div>
+      </div>
+
+      <h4>🔹 方式2（ジグザグ配置）</h4>
+      <div class="method-explanation">
+        <p>文字を上下に蛇行させながら配置する方式です。より複雑な配置パターンを作ります。</p>
+        <div class="example-box">
+          <strong>例：</strong> "HELLO" を3レールで暗号化<br><br>
+          <div class="rail-example">
+            <div class="rail-example-grid">
+              <div class="rail-label">Rail 1:</div>
+              <div class="rail-cell filled">H</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">O</div>
+              
+              <div class="rail-label">Rail 2:</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">E</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">L</div>
+              <div class="rail-cell empty">-</div>
+              
+              <div class="rail-label">Rail 3:</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell filled">L</div>
+              <div class="rail-cell empty">-</div>
+              <div class="rail-cell empty">-</div>
+            </div>
+          </div>
+          <strong>結果：</strong> "HO" + "EL" + "L" = "HOELL"
+        </div>
+      </div>
+    </div>
+
+    <div class="study-section">
+      <h3>🛡️ セキュリティの特徴</h3>
+      
+      <h4>📈 暗号化の強度</h4>
+      <ul>
+        <li><strong>レール数の影響</strong>：レール数が多いほど複雑になる</li>
+        <li><strong>文字長の影響</strong>：長い文章ほど解読が困難</li>
+        <li><strong>方式の選択</strong>：ジグザグ方式の方がやや複雑</li>
+      </ul>
+
+      <h4>⚠️ セキュリティの弱点</h4>
+      <ul>
+        <li><strong>頻度分析に弱い</strong>：文字の出現頻度は変わらない</li>
+        <li><strong>鍵空間が狭い</strong>：レール数と方式のみが鍵</li>
+        <li><strong>総当たり攻撃</strong>：現代では容易に解読可能</li>
+        <li><strong>パターン推測</strong>：短い文章では配置が推測しやすい</li>
+      </ul>
+    </div>
+
+    <div class="study-section">
+      <h3>🔍 解読方法と対策</h3>
+      
+      <h4>👨‍💻 攻撃者の手法</h4>
+      <ol>
+        <li><strong>総当たり攻撃</strong>：全てのレール数・方式を試行</li>
+        <li><strong>頻度分析</strong>：言語の特性を利用した解読</li>
+        <li><strong>辞書攻撃</strong>：既知の単語パターンとの照合</li>
+        <li><strong>文脈推測</strong>：部分的に解読した内容から推測</li>
+      </ol>
+
+      <h4>🛠️ 防御の改善方法</h4>
+      <ul>
+        <li><strong>他の暗号との組み合わせ</strong>：置換暗号と併用</li>
+        <li><strong>ダミー文字や冗字の挿入</strong>：解読を困難にする</li>
+        <li><strong>複数回の適用</strong>：異なる設定で重ねて暗号化</li>
+        <li><strong>可変レール数</strong>：位置によってレール数を変える</li>
+      </ul>
+    </div>
+
+    <div class="study-section">
+      <h3>🎯 学習のポイント</h3>
+      
+      <div class="study-highlight">
+        <h4>📝 理解を深めるために</h4>
+        <ol>
+          <li><strong>手作業で試す</strong>：短い文章で実際に暗号化してみる</li>
+          <li><strong>方式の比較</strong>：同じ文章を異なる方式で暗号化</li>
+          <li><strong>レール数の実験</strong>：レール数による変化を観察</li>
+          <li><strong>解読練習</strong>：暗号文から平文を復元してみる</li>
+          <li><strong>脆弱性の体感</strong>：実験室タブで総当たり攻撃を試す</li>
+        </ol>
+      </div>
+
+      <div class="study-tips">
+        <h4>💡 このツールの活用法</h4>
+        <ul>
+          <li><strong>暗号化タブ</strong>：リアルタイムで暗号化過程を観察</li>
+          <li><strong>復号タブ</strong>：復号の仕組みを理解</li>
+          <li><strong>実験室タブ</strong>：総当たり攻撃や統計分析を体験</li>
+          <li><strong>アニメーション</strong>：文字配置の過程を視覚的に学習</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="study-section">
+      <h3>🌍 現代暗号学への発展</h3>
+      <p>レールフェンス暗号は現代では実用的ではありませんが、暗号学の基礎概念を理解する上で重要な位置を占めています。</p>
+      
+      <h4>🔗 関連する現代技術</h4>
+      <ul>
+        <li><strong>ブロック暗号</strong>：転置の概念が発展</li>
+        <li><strong>ストリーム暗号</strong>：逐次処理の原理</li>
+        <li><strong>ハッシュ関数</strong>：データの混合手法</li>
+        <li><strong>公開鍵暗号</strong>：より高度な数学的基盤
+          <div class="crypto-explanation">
+            レールフェンス暗号のような古典暗号は「物理的な配置」による転置でしたが、公開鍵暗号は「数学的な一方向性」を利用します。例えば、大きな素数の掛け算（簡単）と素因数分解（困難）の計算量の差を暗号化の根拠とするRSA暗号や、楕円曲線上の離散対数問題を利用するECC暗号など、レールフェンス暗号では扱わない高度な数論や代数幾何学が基盤となっています。これにより、古典暗号の「鍵の共有問題」を根本的に解決し、インターネット時代の安全な通信を実現しています。
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div class="tab-content hidden" id="lab">
@@ -215,6 +388,100 @@
       <button onclick="performStatistics()">📈 統計分析開始</button>
       
       <div id="statisticsResults" class="experiment-results"></div>
+    </div>
+  </div>
+
+  <!-- ヘルプモーダル -->
+  <div id="helpModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📚 RailFence CipherLab ヘルプ</h2>
+        <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="help-section">
+          <h3>🔧 基本的な使い方</h3>
+          <h4>暗号化タブ</h4>
+          <ul>
+            <li><strong>平文入力</strong>：暗号化したい文字を入力</li>
+            <li><strong>サンプルボタン</strong>：学習用のサンプル文章を読み込み</li>
+            <li><strong>レール数</strong>：2〜6レールから選択</li>
+            <li><strong>方式選択</strong>：順次配置またはジグザグ配置</li>
+            <li><strong>リアルタイム暗号化</strong>：入力と同時に暗号化を実行</li>
+            <li><strong>アニメーション</strong>：文字配置過程を視覚的に表示</li>
+          </ul>
+          
+          <h4>復号タブ</h4>
+          <ul>
+            <li><strong>設定同期ボタン</strong>：暗号化タブの設定と暗号文を自動取得</li>
+            <li><strong>暗号文入力</strong>：復号したい暗号文を入力</li>
+            <li><strong>リアルタイム復号</strong>：入力と同時に復号を実行</li>
+            <li><strong>視覚的復号過程</strong>：レール配置から平文復元まで表示</li>
+          </ul>
+          
+          <h4>実験室タブ</h4>
+          <ul>
+            <li><strong>総当たり解読</strong>：様々な設定で復号を試行し、可読性スコアで評価</li>
+            <li><strong>統計実験</strong>：異なる設定での暗号化効果を比較分析</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>🎯 機能詳細</h3>
+          <h4>文字数制限</h4>
+          <ul>
+            <li><strong>ソフト制限</strong>：100文字で警告表示</li>
+            <li><strong>ハード制限</strong>：500文字で入力停止</li>
+            <li><strong>警告表示</strong>：空白、記号、改行の存在を通知</li>
+          </ul>
+          
+          <h4>アニメーション機能</h4>
+          <ul>
+            <li><strong>速度調整</strong>：100ms〜2000msで調整可能</li>
+            <li><strong>再生/一時停止</strong>：途中での停止・再開が可能</li>
+            <li><strong>リセット</strong>：初期状態に戻して再実行可能</li>
+          </ul>
+          
+          <h4>エクスポート機能</h4>
+          <ul>
+            <li><strong>画像保存</strong>：レール配置をPNG形式で保存</li>
+            <li><strong>テキスト保存</strong>：設定と結果をテキストファイルで保存</li>
+            <li><strong>印刷</strong>：レール配置を印刷用レイアウトで出力</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>📖 学習の進め方</h3>
+          <ol>
+            <li><strong>座学タブ</strong>で基礎知識を学習</li>
+            <li><strong>暗号化タブ</strong>でサンプルを使って操作体験</li>
+            <li><strong>アニメーション</strong>で文字配置過程を観察</li>
+            <li><strong>復号タブ</strong>で逆向きの処理を理解</li>
+            <li><strong>実験室タブ</strong>で総当たり攻撃を体験</li>
+            <li>自分なりの文章で様々な設定を試行</li>
+          </ol>
+        </div>
+
+        <div class="help-section">
+          <h3>⚠️ 注意事項</h3>
+          <ul>
+            <li>このツールは教育目的であり、実際のセキュリティには使用できません</li>
+            <li>レールフェンス暗号は現代では脆弱な暗号方式です</li>
+            <li>ブラウザのローカルストレージを使用していません（データは保存されません）</li>
+            <li>インターネット接続は不要です（オフラインで動作）</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>🔗 技術情報</h3>
+          <ul>
+            <li><strong>対応ブラウザ</strong>：モダンブラウザ（Chrome, Firefox, Safari, Edge）</li>
+            <li><strong>技術スタック</strong>：HTML5, CSS3, Vanilla JavaScript</li>
+            <li><strong>ライセンス</strong>：MIT License</li>
+            <li><strong>ソースコード</strong>：<a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank">GitHub</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -114,3 +114,33 @@ function showToast(element, message, type = "success") {
     }, 300);
   }, 2000);
 }
+
+// ヘルプモーダル機能
+function openHelpModal() {
+  const modal = document.getElementById('helpModal');
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden'; // スクロールを無効化
+}
+
+function closeHelpModal() {
+  const modal = document.getElementById('helpModal');
+  modal.classList.add('hidden');
+  document.body.style.overflow = 'auto'; // スクロールを有効化
+}
+
+// モーダル外をクリックしたときに閉じる
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('helpModal');
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeHelpModal();
+    }
+  });
+  
+  // ESCキーでモーダルを閉じる
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      closeHelpModal();
+    }
+  });
+});
