@@ -114,20 +114,72 @@ input[type="checkbox"] {
 }
 
 #warning-area {
-  color: #ff6b6b;
   font-size: 0.9rem;
+  margin: 0;
+  min-height: 0;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+#warning-area:not(:empty) {
   margin: 0.5rem 0;
   min-height: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+#warning-area.info {
+  color: #666;
+  background: #f0f4f8;
+  border: 1px solid #d0d4d8;
+}
+
+#warning-area.error {
+  color: #ff6b6b;
+  background: #fff0f0;
+  border: 1px solid #ffdddd;
 }
 
 .readonly-box {
-  background: #f8f9fa;
+  background: #e8e9ea;
   padding: 1rem;
-  margin: 1rem 0;
-  border: 1px solid #e0e0e0;
+  margin: 1.5rem 0 1rem 0;
+  border: 1px dashed #ccc;
   border-radius: 8px;
   font-family: 'Courier New', monospace;
-  color: #555;
+  color: #666;
+  position: relative;
+  min-height: 1.5rem;
+}
+
+.readonly-box strong {
+  color: #333;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+#cleanedText::before {
+  content: "処理後のテキスト:";
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: white;
+  padding: 0 5px;
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: 600;
+}
+
+#intermediateText::before {
+  content: "レールから読み取った順序:";
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: white;
+  padding: 0 5px;
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: 600;
 }
 
 button {
@@ -139,12 +191,18 @@ button {
   margin-top: 1rem;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+button:disabled {
+  background: linear-gradient(135deg, #ccc 0%, #999 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 #railDisplay,
@@ -158,6 +216,114 @@ button:hover {
   border: 1px solid #e0e0e0;
   font-size: 1.1rem;
   line-height: 1.6;
+  overflow-x: auto;
+}
+
+.rail-grid {
+  display: table;
+  border-collapse: separate;
+  border-spacing: 2px;
+  margin: 0 auto;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.rail-row {
+  display: table-row;
+}
+
+.rail-row[data-rail="0"] .rail-cell.filled {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.rail-row[data-rail="1"] .rail-cell.filled {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.rail-row[data-rail="2"] .rail-cell.filled {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.rail-row[data-rail="3"] .rail-cell.filled {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.rail-row[data-rail="4"] .rail-cell.filled {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.rail-row[data-rail="5"] .rail-cell.filled {
+  background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+}
+
+.rail-label {
+  display: table-cell;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  color: #666;
+  text-align: right;
+  min-width: 60px;
+  vertical-align: middle;
+}
+
+.rail-cell {
+  display: table-cell;
+  width: 32px;
+  height: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.rail-cell.filled {
+  color: white;
+  animation: fadeIn 0.3s ease;
+}
+
+.rail-cell.empty {
+  background: #f0f0f0;
+  opacity: 0.3;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.result-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.copy-btn {
+  padding: 0.5rem 1rem;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  margin: 0;
+}
+
+.copy-btn:hover {
+  background: #357ab8;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
 }
 
 #cipherResult,
@@ -188,4 +354,106 @@ button:hover {
 
 .footer a:hover {
   text-decoration: underline;
+}
+
+.toast {
+  background: #4CAF50;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast.error {
+  background: #f44336;
+}
+
+.toast.show {
+  opacity: 1;
+  animation: toastSlideIn 0.3s ease;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translate(-50%, -120%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -100%);
+    opacity: 1;
+  }
+}
+
+.animation-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.animation-controls.hidden {
+  display: none;
+}
+
+.animation-controls button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.animation-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.animation-controls input[type="range"] {
+  width: 150px;
+  cursor: pointer;
+}
+
+.animation-controls input[type="range"]:hover {
+  opacity: 0.8;
+}
+
+#speedDisplay {
+  min-width: 60px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.rail-cell.hidden-cell {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.rail-cell.animate-appear {
+  animation: cellAppear 0.5s ease forwards;
+}
+
+@keyframes cellAppear {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0) rotate(180deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(90deg);
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) rotate(0deg);
+  }
 }

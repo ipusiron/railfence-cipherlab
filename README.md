@@ -1,4 +1,4 @@
-# RailFence CipherLab
+# RailFence CipherLab - レールフェンス暗号可視化ツール
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/ipusiron/railfence-cipherlab?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/ipusiron/railfence-cipherlab?style=social)
@@ -7,7 +7,7 @@
 
 **Day034 - 生成AIで作るセキュリティツール100**
 
-**RailFence CipherLab** は、レールフェンス暗号を視覚的に学べるWebツールです。  
+**RailFence CipherLab** は、レールフェンス暗号を視覚的に学べるWebツールです。
 暗号化・復号・座学の3タブ構成で、教育や解読学習に活用できます。
 
 ---
@@ -15,7 +15,6 @@
 ## 🌐 デモページ
 
 👉 [https://ipusiron.github.io/railfence-cipherlab/](https://ipusiron.github.io/railfence-cipherlab/)
-
 
 ---
 

@@ -43,9 +43,24 @@
       </label>
     </div>
 
+    <label>
+      <input type="checkbox" id="realtimeMode" checked> リアルタイム暗号化
+    </label>
+    <button id="encryptBtn" onclick="encrypt()" disabled>暗号化する</button>
+    
     <div class="readonly-box" id="cleanedText"></div>
-    <button onclick="encrypt()">暗号化する</button>
+    
+    <div id="animationControls" class="animation-controls hidden">
+      <button id="playBtn" onclick="toggleAnimation()">▶ 再生</button>
+      <button onclick="resetAnimation()">⏹ リセット</button>
+      <label>速度:
+        <input type="range" id="animationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります">
+        <span id="speedDisplay">100ms</span>
+      </label>
+    </div>
+    
     <div id="railDisplay"></div>
+    <div class="readonly-box" id="intermediateText"></div>
     <div id="cipherResult"></div>
   </div>
 
