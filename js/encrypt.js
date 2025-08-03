@@ -150,6 +150,7 @@ function clearEncryptionDisplay() {
   document.getElementById("intermediateText").innerHTML = "";
   document.getElementById("cipherResult").innerHTML = "";
   document.getElementById("animationControls").classList.add("hidden");
+  document.getElementById("exportControls").classList.add("hidden");
 }
 
 function encryptWithoutAnimation() {
@@ -203,6 +204,9 @@ function encryptWithoutAnimation() {
       <button class="copy-btn" onclick="copyToClipboard('${result}', event)">📋 コピー</button>
     </div>
   `;
+  
+  // エクスポートコントロールを表示
+  document.getElementById("exportControls").classList.remove("hidden");
 }
 
 function encrypt() {
@@ -277,6 +281,9 @@ function encrypt() {
       <button class="copy-btn" onclick="copyToClipboard('${result}', event)">📋 コピー</button>
     </div>
   `;
+  
+  // エクスポートコントロールを表示
+  document.getElementById("exportControls").classList.remove("hidden");
 }
 
 function displayRailGrid(matrix, railCount, textLength, hideAll = false) {
@@ -385,4 +392,184 @@ function clearText() {
   
   // フォーカスを当てる
   plaintextArea.focus();
+}
+
+// エクスポート機能
+function exportAsImage() {
+  const railGrid = document.querySelector('.rail-grid');
+  if (!railGrid) {
+    showToast(document.querySelector('#exportControls button'), "エクスポートするレール配置がありません", "error");
+    return;
+  }
+
+  // html2canvasライブラリが利用できない場合の代替処理
+  if (typeof html2canvas === 'undefined') {
+    // Canvas APIを使った簡易的な画像生成
+    exportRailAsCanvas();
+  } else {
+    // html2canvasを使った高品質な画像生成
+    html2canvas(railGrid, {
+      backgroundColor: '#ffffff',
+      scale: 2
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'railfence-cipher.png';
+      link.href = canvas.toDataURL();
+      link.click();
+      showToast(document.querySelector('#exportControls button'), "画像をダウンロードしました", "success");
+    });
+  }
+}
+
+function exportRailAsCanvas() {
+  const railGrid = document.querySelector('.rail-grid');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // キャンバスサイズ設定
+  canvas.width = 800;
+  canvas.height = 400;
+  
+  // 背景色
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // フォント設定
+  ctx.fillStyle = '#333333';
+  ctx.font = '16px monospace';
+  
+  // レール配置を描画
+  const rows = railGrid.querySelectorAll('.rail-row');
+  let yPos = 50;
+  
+  rows.forEach((row, rowIndex) => {
+    const label = row.querySelector('.rail-label').textContent;
+    ctx.fillText(label, 20, yPos);
+    
+    const cells = row.querySelectorAll('.rail-cell');
+    let xPos = 120;
+    
+    cells.forEach(cell => {
+      // セルの背景
+      if (cell.classList.contains('filled')) {
+        ctx.fillStyle = '#e0e0e0';
+        ctx.fillRect(xPos, yPos - 20, 30, 25);
+        
+        // 文字
+        ctx.fillStyle = '#333333';
+        ctx.fillText(cell.textContent, xPos + 8, yPos - 2);
+      } else {
+        ctx.strokeStyle = '#cccccc';
+        ctx.strokeRect(xPos, yPos - 20, 30, 25);
+      }
+      xPos += 35;
+    });
+    
+    yPos += 40;
+  });
+  
+  // ダウンロード
+  const link = document.createElement('a');
+  link.download = 'railfence-cipher.png';
+  link.href = canvas.toDataURL();
+  link.click();
+  showToast(document.querySelector('#exportControls button'), "画像をダウンロードしました", "success");
+}
+
+function exportAsText() {
+  const railGrid = document.querySelector('.rail-grid');
+  if (!railGrid) {
+    showToast(document.querySelector('#exportControls button:nth-child(2)'), "エクスポートするレール配置がありません", "error");
+    return;
+  }
+
+  let textOutput = "レールフェンス暗号 - レール配置\n";
+  textOutput += "=" * 40 + "\n\n";
+  
+  const plaintext = document.getElementById("plaintext").value;
+  const railCount = document.getElementById("railCount").value;
+  const method = document.getElementById("method").value;
+  
+  textOutput += `平文: ${plaintext}\n`;
+  textOutput += `レール数: ${railCount}\n`;
+  textOutput += `方式: ${method === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}\n\n`;
+  
+  const rows = railGrid.querySelectorAll('.rail-row');
+  rows.forEach(row => {
+    const label = row.querySelector('.rail-label').textContent;
+    const cells = row.querySelectorAll('.rail-cell');
+    let rowText = label + ": ";
+    
+    cells.forEach(cell => {
+      if (cell.classList.contains('filled')) {
+        rowText += cell.textContent + " ";
+      } else {
+        rowText += "- ";
+      }
+    });
+    
+    textOutput += rowText.trim() + "\n";
+  });
+  
+  const intermediateText = document.getElementById("intermediateText").textContent;
+  const cipherResult = document.querySelector("#cipherResult span").textContent;
+  
+  textOutput += "\n" + intermediateText.replace(/<[^>]*>/g, '') + "\n";
+  textOutput += cipherResult + "\n";
+  
+  // ダウンロード
+  const blob = new Blob([textOutput], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.download = 'railfence-cipher.txt';
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  showToast(document.querySelector('#exportControls button:nth-child(2)'), "テキストファイルをダウンロードしました", "success");
+}
+
+function printRailGrid() {
+  const railGrid = document.querySelector('.rail-grid');
+  if (!railGrid) {
+    showToast(document.querySelector('#exportControls button:nth-child(3)'), "印刷するレール配置がありません", "error");
+    return;
+  }
+
+  // 印刷用ウィンドウを開く
+  const printWindow = window.open('', '_blank');
+  
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>レールフェンス暗号 - レール配置</title>
+      <style>
+        body { font-family: monospace; margin: 20px; }
+        .rail-grid { border: 2px solid #000; }
+        .rail-row { display: table-row; }
+        .rail-label { display: table-cell; padding: 8px; font-weight: bold; border: 1px solid #000; }
+        .rail-cell { display: table-cell; width: 40px; height: 40px; text-align: center; vertical-align: middle; border: 1px solid #000; }
+        .rail-cell.filled { background: #f0f0f0; font-weight: bold; }
+        h1 { text-align: center; }
+        .info { margin-bottom: 20px; }
+      </style>
+    </head>
+    <body>
+      <h1>レールフェンス暗号 - レール配置</h1>
+      <div class="info">
+        <p>平文: ${document.getElementById("plaintext").value}</p>
+        <p>レール数: ${document.getElementById("railCount").value}</p>
+        <p>方式: ${document.getElementById("method").value === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}</p>
+      </div>
+      ${railGrid.outerHTML}
+      <div style="margin-top: 20px;">
+        <p>${document.getElementById("intermediateText").textContent.replace(/<[^>]*>/g, '')}</p>
+        <p>${document.querySelector("#cipherResult span").textContent}</p>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+  printWindow.print();
+  showToast(document.querySelector('#exportControls button:nth-child(3)'), "印刷ダイアログを開きました", "success");
 }

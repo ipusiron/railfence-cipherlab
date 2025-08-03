@@ -67,6 +67,12 @@
     <div id="railDisplay"></div>
     <div class="readonly-box" id="intermediateText"></div>
     <div id="cipherResult"></div>
+    
+    <div id="exportControls" class="export-controls hidden">
+      <button onclick="exportAsImage()">📷 画像で保存</button>
+      <button onclick="exportAsText()">📄 テキストで保存</button>
+      <button onclick="printRailGrid()">🖨 印刷</button>
+    </div>
   </div>
 
   <div class="tab-content hidden" id="decrypt">

@@ -493,3 +493,77 @@ button:disabled {
 .sample-btn:active {
   transform: translateY(0);
 }
+
+.export-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.export-controls.hidden {
+  display: none;
+}
+
+.export-controls button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin: 0;
+  background: #28a745;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-controls button:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.export-controls button:nth-child(2) {
+  background: #17a2b8;
+}
+
+.export-controls button:nth-child(2):hover {
+  background: #138496;
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+.export-controls button:nth-child(3) {
+  background: #6f42c1;
+}
+
+.export-controls button:nth-child(3):hover {
+  background: #5a32a3;
+  box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
+
+@media print {
+  .rail-grid {
+    background: white !important;
+    box-shadow: none !important;
+    border: 2px solid #000 !important;
+  }
+  
+  .rail-cell {
+    border: 1px solid #000 !important;
+  }
+  
+  .rail-cell.filled {
+    background: #f0f0f0 !important;
+    color: #000 !important;
+    font-weight: bold !important;
+  }
+  
+  .rail-label {
+    font-weight: bold !important;
+    color: #000 !important;
+  }
+}
