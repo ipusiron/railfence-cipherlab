@@ -1,42 +1,70 @@
 /* style.css */
 
 body {
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-  background: #f9f9f9;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
   color: #333;
 }
 
 header {
   text-align: center;
-  background-color: #4a90e2;
-  color: white;
-  padding: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  padding: 2rem 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin: 0;
+  color: #4a90e2;
+}
+
+header p {
+  margin: 0.5rem 0 0 0;
+  color: #666;
 }
 
 .tabs {
   display: flex;
   justify-content: center;
-  background: #e0e0e0;
+  background: transparent;
+  max-width: 800px;
+  margin: 2rem auto 0;
+  gap: 0.5rem;
 }
 
 .tab-button {
-  padding: 0.5rem 1.5rem;
+  padding: 0.75rem 2rem;
   border: none;
-  background: none;
+  background: rgba(255, 255, 255, 0.7);
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  color: #333;
+  border-radius: 12px 12px 0 0;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .tab-button.active {
   background: white;
-  border-bottom: 3px solid #4a90e2;
+  color: #4a90e2;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .tab-content {
-  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding: 2rem;
   display: block;
+  background: white;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .tab-content.hidden {
@@ -46,49 +74,118 @@ header {
 textarea {
   width: 100%;
   font-size: 1rem;
-  padding: 0.5rem;
+  padding: 0.75rem;
   margin: 0.5rem 0;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
 }
 
 label {
   display: inline-block;
   margin-right: 1rem;
+  margin-bottom: 0.5rem;
+  color: #555;
 }
 
-.readonly-box {
-  background-color: #efefef;
+select {
   padding: 0.5rem;
-  margin: 1rem 0;
-  border: 1px solid #ccc;
-  font-family: monospace;
-  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
 }
 
-button {
-  padding: 0.5rem 1rem;
-  background: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  margin-top: 1rem;
+select:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+input[type="checkbox"] {
+  margin-right: 0.5rem;
   cursor: pointer;
 }
 
+#warning-area {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  min-height: 1.2rem;
+}
+
+.readonly-box {
+  background: #f8f9fa;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  color: #555;
+}
+
+button {
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-top: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
 button:hover {
-  background-color: #357ab8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 #railDisplay,
 #decryptDisplay {
-  margin-top: 1rem;
-  font-family: monospace;
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  font-family: 'Courier New', monospace;
   white-space: pre;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+#cipherResult,
+#plainResult {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
 
 .footer {
   text-align: center;
-  padding: 1rem;
+  padding: 1.5rem;
   font-size: 0.9rem;
-  background: #eee;
-  margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  margin-top: 3rem;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.footer a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer a:hover {
+  text-decoration: underline;
 }
