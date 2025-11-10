@@ -167,19 +167,28 @@ function displayBruteForceResults(results) {
   results.forEach((result, index) => {
     const scoreClass = result.score >= 50 ? 'high-score' : result.score >= 30 ? 'medium-score' : 'low-score';
     html += `
-      <div class="lab-result-row ${scoreClass}">
+      <div class="lab-result-row ${scoreClass}" data-result-index="${index}">
         <div class="lab-result-info">
-          <strong>${index + 1}. ${result.railCount}レール・${result.method}</strong>
+          <strong>${index + 1}. ${result.railCount}レール・${escapeHtml(result.method)}</strong>
           <span class="lab-score">スコア: ${result.score}</span>
         </div>
-        <div class="lab-result-text">${result.result}</div>
-        <button class="copy-btn" onclick="copyToClipboard('${result.result}', event)">📋 コピー</button>
+        <div class="lab-result-text">${escapeHtml(result.result)}</div>
+        <button class="copy-btn" data-copy-index="${index}">📋 コピー</button>
       </div>
     `;
   });
-  
+
   html += '</div>';
   resultsDiv.innerHTML = html;
+
+  // コピーボタンにイベントリスナーを追加（XSS対策済み）
+  results.forEach((result, index) => {
+    const copyBtn = resultsDiv.querySelector(`button[data-copy-index="${index}"]`);
+    if (copyBtn) {
+      copyBtn.dataset.copyText = result.result;
+      copyBtn.addEventListener('click', (e) => copyToClipboard(null, e));
+    }
+  });
 }
 
 // 統計実験
@@ -304,18 +313,18 @@ function displayStatisticsResults(statistics) {
   
   statistics.forEach((stat, index) => {
     html += `
-      <div class="lab-stat-card">
+      <div class="lab-stat-card" data-stat-index="${index}">
         <div class="lab-stat-header">
-          <h5>${stat.railCount}レール・${stat.method}</h5>
+          <h5>${stat.railCount}レール・${escapeHtml(stat.method)}</h5>
         </div>
         <div class="lab-stat-content">
-          <p><strong>暗号文:</strong> ${stat.encrypted}</p>
+          <p><strong>暗号文:</strong> ${escapeHtml(stat.encrypted)}</p>
           <div class="lab-stat-metrics">
             <div>平均移動距離: <span class="metric-value">${stat.analysis.avgMovement.toFixed(1)}</span></div>
             <div>最大移動距離: <span class="metric-value">${stat.analysis.maxMovement}</span></div>
             <div>エントロピー変化: <span class="metric-value">${(stat.analysis.encryptedEntropy - stat.analysis.originalEntropy).toFixed(2)}</span></div>
           </div>
-          <button class="copy-btn" onclick="copyToClipboard('${stat.encrypted}', event)">📋 コピー</button>
+          <button class="copy-btn" data-copy-stat-index="${index}">📋 コピー</button>
         </div>
       </div>
     `;
@@ -332,11 +341,20 @@ function displayStatisticsResults(statistics) {
   html += `
     <div class="lab-summary">
       <h5>📋 分析サマリー</h5>
-      <p><strong>最も文字を分散させる設定:</strong> ${bestMethod.railCount}レール・${bestMethod.method}</p>
+      <p><strong>最も文字を分散させる設定:</strong> ${bestMethod.railCount}レール・${escapeHtml(bestMethod.method)}</p>
       <p><strong>平均移動距離:</strong> ${maxAvgMovement.toFixed(1)} 文字</p>
       <p>移動距離が大きいほど、元の文字順序が隠蔽されています。</p>
     </div>
   `;
-  
+
   resultsDiv.innerHTML = html;
+
+  // コピーボタンにイベントリスナーを追加（XSS対策済み）
+  statistics.forEach((stat, index) => {
+    const copyBtn = resultsDiv.querySelector(`button[data-copy-stat-index="${index}"]`);
+    if (copyBtn) {
+      copyBtn.dataset.copyText = stat.encrypted;
+      copyBtn.addEventListener('click', (e) => copyToClipboard(null, e));
+    }
+  });
 }

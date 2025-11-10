@@ -189,15 +189,14 @@ function decryptWithoutAnimation() {
   const result = performDecryptionLogic(text, railCount, method);
   
   displayDecryptRailGrid(result.railMatrix, railCount, text.length, false);
-  
+
   document.getElementById("decryptIntermediateText").innerHTML = result.intermediateText;
-  
-  document.getElementById("plainResult").innerHTML = `
-    <div class="result-container">
-      <span>復号結果: ${result.plaintext}</span>
-      <button class="copy-btn" onclick="copyToClipboard('${result.plaintext}', event)">📋 コピー</button>
-    </div>
-  `;
+
+  // 復号結果を安全に表示（XSS対策済み）
+  const resultContainer = createResultContainer("復号結果", result.plaintext);
+  const plainResultDiv = document.getElementById("plainResult");
+  plainResultDiv.innerHTML = '';
+  plainResultDiv.appendChild(resultContainer);
   
   // エクスポートコントロールを表示
   document.getElementById("decryptExportControls").classList.remove("hidden");
@@ -378,12 +377,13 @@ function performDecryptionLogic(text, railCount, method) {
     }
   }
 
-  // 中間状態2: レールから読み取った順序を表示
+  // 中間状態2: レールから読み取った順序を表示（XSS対策済み）
   let intermediateDisplay = [];
   for (let r = 0; r < railCount; r++) {
     const railChars = railMatrix[r].filter(c => c !== null);
     if (railChars.length > 0) {
-      intermediateDisplay.push(`Rail${r+1}: <strong>${railChars.join("")}</strong>`);
+      const escapedChars = escapeHtml(railChars.join(""));
+      intermediateDisplay.push(`Rail${r+1}: <strong>${escapedChars}</strong>`);
     }
   }
 
@@ -434,15 +434,14 @@ function decrypt() {
 
   document.getElementById("decryptAnimationControls").classList.remove("hidden");
   displayDecryptRailGrid(result.railMatrix, railCount, text.length, true);
-  
+
   document.getElementById("decryptIntermediateText").innerHTML = result.intermediateText;
-  
-  document.getElementById("plainResult").innerHTML = `
-    <div class="result-container">
-      <span>復号結果: ${result.plaintext}</span>
-      <button class="copy-btn" onclick="copyToClipboard('${result.plaintext}', event)">📋 コピー</button>
-    </div>
-  `;
+
+  // 復号結果を安全に表示（XSS対策済み）
+  const resultContainer = createResultContainer("復号結果", result.plaintext);
+  const plainResultDiv = document.getElementById("plainResult");
+  plainResultDiv.innerHTML = '';
+  plainResultDiv.appendChild(resultContainer);
   
   // エクスポートコントロールを表示
   document.getElementById("decryptExportControls").classList.remove("hidden");
@@ -604,12 +603,12 @@ function exportDecryptAsText() {
   }
 
   let textOutput = "レールフェンス暗号 - 復号レール配置\n";
-  textOutput += "=" * 40 + "\n\n";
-  
+  textOutput += "========================================\n\n";
+
   const ciphertext = document.getElementById("ciphertext").value;
   const railCount = document.getElementById("decryptRailCount").value;
   const method = document.getElementById("decryptMethod").value;
-  
+
   textOutput += `暗号文: ${ciphertext}\n`;
   textOutput += `レール数: ${railCount}\n`;
   textOutput += `方式: ${method === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}\n\n`;
@@ -675,14 +674,14 @@ function printDecryptRailGrid() {
     <body>
       <h1>レールフェンス暗号 - 復号レール配置</h1>
       <div class="info">
-        <p>暗号文: ${document.getElementById("ciphertext").value}</p>
-        <p>レール数: ${document.getElementById("decryptRailCount").value}</p>
+        <p>暗号文: ${escapeHtml(document.getElementById("ciphertext").value)}</p>
+        <p>レール数: ${escapeHtml(document.getElementById("decryptRailCount").value)}</p>
         <p>方式: ${document.getElementById("decryptMethod").value === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}</p>
       </div>
       ${railGrid.outerHTML}
       <div style="margin-top: 20px;">
-        <p>${document.getElementById("decryptIntermediateText").textContent.replace(/<[^>]*>/g, '')}</p>
-        <p>${document.querySelector("#plainResult span").textContent}</p>
+        <p>${escapeHtml(document.getElementById("decryptIntermediateText").textContent.replace(/<[^>]*>/g, ''))}</p>
+        <p>${escapeHtml(document.querySelector("#plainResult span").textContent)}</p>
       </div>
     </body>
     </html>

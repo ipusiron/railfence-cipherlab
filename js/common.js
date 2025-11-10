@@ -1,5 +1,18 @@
 // common.js - 共通機能
 
+// HTMLエスケープ関数（XSS対策）
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') {
+    return unsafe;
+  }
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // タブ切り替え機能
 document.querySelectorAll(".tab-button").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -72,14 +85,47 @@ function updateWarning(text) {
   return textLength < CHARACTER_LIMITS.HARD_LIMIT;
 }
 
-// コピー機能
+// コピー機能（改善版：XSS対策）
 function copyToClipboard(text, event) {
-  const btn = event.target;
-  navigator.clipboard.writeText(text).then(() => {
-    showToast(btn, "クリップボードにコピーしました！");
+  const btn = event ? event.target : null;
+  const textToCopy = text || (btn ? btn.dataset.copyText : '');
+
+  if (!textToCopy) {
+    console.error('コピーするテキストがありません');
+    return;
+  }
+
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    showToast(btn || document.body, "クリップボードにコピーしました！");
   }).catch(() => {
-    showToast(btn, "コピーに失敗しました", "error");
+    showToast(btn || document.body, "コピーに失敗しました", "error");
   });
+}
+
+// コピーボタンを安全に作成するヘルパー関数
+function createCopyButton(textToCopy, label = "📋 コピー") {
+  const button = document.createElement('button');
+  button.className = 'copy-btn';
+  button.textContent = label;
+  button.dataset.copyText = textToCopy;
+  button.addEventListener('click', (e) => copyToClipboard(null, e));
+  return button;
+}
+
+// 結果コンテナを安全に作成するヘルパー関数
+function createResultContainer(labelText, resultText) {
+  const container = document.createElement('div');
+  container.className = 'result-container';
+
+  const span = document.createElement('span');
+  span.textContent = `${labelText}: ${resultText}`;
+
+  const copyBtn = createCopyButton(resultText);
+
+  container.appendChild(span);
+  container.appendChild(copyBtn);
+
+  return container;
 }
 
 // Toast表示機能

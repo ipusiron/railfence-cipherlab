@@ -185,25 +185,25 @@ function encryptWithoutAnimation() {
   }
 
   displayRailGrid(railMatrix, railCount, cleaned.length, false);
-  
+
   const result = railMatrix.flat().filter(c => c !== null).join("");
-  
-  // 中間状態2：レールから読み取った順序を表示
+
+  // 中間状態2：レールから読み取った順序を表示（XSS対策済み）
   let intermediateDisplay = [];
   for (let r = 0; r < railCount; r++) {
     const railChars = railMatrix[r].filter(c => c !== null);
     if (railChars.length > 0) {
-      intermediateDisplay.push(`Rail${r+1}: <strong>${railChars.join("")}</strong>`);
+      const escapedChars = escapeHtml(railChars.join(""));
+      intermediateDisplay.push(`Rail${r+1}: <strong>${escapedChars}</strong>`);
     }
   }
   document.getElementById("intermediateText").innerHTML = intermediateDisplay.join(" → ");
-  
-  document.getElementById("cipherResult").innerHTML = `
-    <div class="result-container">
-      <span>暗号文: ${result}</span>
-      <button class="copy-btn" onclick="copyToClipboard('${result}', event)">📋 コピー</button>
-    </div>
-  `;
+
+  // 暗号化結果を安全に表示（XSS対策済み）
+  const resultContainer = createResultContainer("暗号文", result);
+  const cipherResultDiv = document.getElementById("cipherResult");
+  cipherResultDiv.innerHTML = '';
+  cipherResultDiv.appendChild(resultContainer);
   
   // エクスポートコントロールを表示
   document.getElementById("exportControls").classList.remove("hidden");
@@ -262,25 +262,25 @@ function encrypt() {
 
   document.getElementById("animationControls").classList.remove("hidden");
   displayRailGrid(railMatrix, railCount, cleaned.length, true);
-  
+
   const result = railMatrix.flat().filter(c => c !== null).join("");
-  
-  // 中間状態2：レールから読み取った順序を表示
+
+  // 中間状態2：レールから読み取った順序を表示（XSS対策済み）
   let intermediateDisplay = [];
   for (let r = 0; r < railCount; r++) {
     const railChars = railMatrix[r].filter(c => c !== null);
     if (railChars.length > 0) {
-      intermediateDisplay.push(`Rail${r+1}: <strong>${railChars.join("")}</strong>`);
+      const escapedChars = escapeHtml(railChars.join(""));
+      intermediateDisplay.push(`Rail${r+1}: <strong>${escapedChars}</strong>`);
     }
   }
   document.getElementById("intermediateText").innerHTML = intermediateDisplay.join(" → ");
-  
-  document.getElementById("cipherResult").innerHTML = `
-    <div class="result-container">
-      <span>暗号文: ${result}</span>
-      <button class="copy-btn" onclick="copyToClipboard('${result}', event)">📋 コピー</button>
-    </div>
-  `;
+
+  // 暗号化結果を安全に表示（XSS対策済み）
+  const resultContainer = createResultContainer("暗号文", result);
+  const cipherResultDiv = document.getElementById("cipherResult");
+  cipherResultDiv.innerHTML = '';
+  cipherResultDiv.appendChild(resultContainer);
   
   // エクスポートコントロールを表示
   document.getElementById("exportControls").classList.remove("hidden");
@@ -484,12 +484,12 @@ function exportAsText() {
   }
 
   let textOutput = "レールフェンス暗号 - レール配置\n";
-  textOutput += "=" * 40 + "\n\n";
-  
+  textOutput += "========================================\n\n";
+
   const plaintext = document.getElementById("plaintext").value;
   const railCount = document.getElementById("railCount").value;
   const method = document.getElementById("method").value;
-  
+
   textOutput += `平文: ${plaintext}\n`;
   textOutput += `レール数: ${railCount}\n`;
   textOutput += `方式: ${method === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}\n\n`;
@@ -555,14 +555,14 @@ function printRailGrid() {
     <body>
       <h1>レールフェンス暗号 - レール配置</h1>
       <div class="info">
-        <p>平文: ${document.getElementById("plaintext").value}</p>
-        <p>レール数: ${document.getElementById("railCount").value}</p>
+        <p>平文: ${escapeHtml(document.getElementById("plaintext").value)}</p>
+        <p>レール数: ${escapeHtml(document.getElementById("railCount").value)}</p>
         <p>方式: ${document.getElementById("method").value === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}</p>
       </div>
       ${railGrid.outerHTML}
       <div style="margin-top: 20px;">
-        <p>${document.getElementById("intermediateText").textContent.replace(/<[^>]*>/g, '')}</p>
-        <p>${document.querySelector("#cipherResult span").textContent}</p>
+        <p>${escapeHtml(document.getElementById("intermediateText").textContent.replace(/<[^>]*>/g, ''))}</p>
+        <p>${escapeHtml(document.querySelector("#cipherResult span").textContent)}</p>
       </div>
     </body>
     </html>
