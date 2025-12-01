@@ -1,3 +1,38 @@
+<!--
+---
+id: day034
+slug: railfence-cipherlab
+
+title: "RailFence CipherLab"
+
+subtitle_ja: "レールフェンス暗号学習ツール"
+subtitle_en: "Rail Fence Cipher Learning Tool"
+
+description_ja: "レールフェンス暗号を視覚的に学べる包括的なWebツール。暗号化・復号・座学・実験室の4タブ構成で、古典暗号の理解から実践的な解読演習まで幅広くサポートします。"
+description_en: "A comprehensive web tool for visually learning the Rail Fence cipher. Features 4 tabs (Encrypt, Decrypt, Study, Lab) supporting everything from understanding classical cryptography to practical decryption exercises."
+
+category_ja:
+  - 古典暗号
+  - 転置式暗号
+category_en:
+  - Classical Cryptography
+  - Transposition Cipher
+
+difficulty: 1
+
+tags:
+  - rail-fence-cipher
+  - visualization
+  - ctf
+  - education
+
+repo_url: "https://github.com/ipusiron/railfence-cipherlab"
+demo_url: "https://ipusiron.github.io/railfence-cipherlab/"
+
+hub: true
+---
+-->
+
 # RailFence CipherLab - レールフェンス暗号学習ツール
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/ipusiron/railfence-cipherlab?style=social)
@@ -52,7 +87,7 @@
 
 ### 🎯 概要
 
-レールフェンス暗号（Rail Fence Cipher）は、**転置式暗号**の一種で、平文の文字を鉄道のレール状に配置して並び順を変えることで暗号化する古典暗号です。
+レールフェンス暗号（Rail Fence Cipher）は、**転置式暗号** の一種で、平文の文字を鉄道のレール状に配置して並び順を変えることで暗号化する古典暗号です。
 
 その名前は、文字の配置パターンが鉄道のレール（rail fence）に似ていることに由来します。
 
