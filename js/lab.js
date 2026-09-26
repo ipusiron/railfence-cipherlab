@@ -1,4 +1,6 @@
 // lab.js - 実験室タブの機能
+let lastBruteForceResults = null;
+let lastStatisticsResults = null;
 
 // DOM読み込み後に初期化
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,7 +16,7 @@ function initializeLabTab() {
   
   // 統計実験のイベントリスナー
   document.getElementById("labPlaintext").addEventListener("input", (e) => {
-    const statisticsBtn = document.querySelector("button[onclick='performStatistics()']");
+    const statisticsBtn = document.getElementById("statisticsBtn");
     if (statisticsBtn) {
       statisticsBtn.disabled = e.target.value.trim().length === 0;
     }
@@ -23,13 +25,13 @@ function initializeLabTab() {
 
 // 総当たり解読実験
 function performBruteForce() {
-  const ciphertext = document.getElementById("labCiphertext").value.trim();
+  const ciphertext = document.getElementById("labCiphertext").value;
   const railRange = document.getElementById("labRailRange").value;
   const bothMethods = document.getElementById("labBothMethods").checked;
   const resultsDiv = document.getElementById("bruteForceResults");
   
-  if (ciphertext.length === 0) {
-    resultsDiv.innerHTML = '<p style="color: #ff6b6b;">暗号文を入力してください。</p>';
+  if (ciphertext.trim().length === 0) {
+    resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.42')));
     return;
   }
   
@@ -37,7 +39,7 @@ function performBruteForce() {
   const [minRails, maxRails] = railRange.split('-').map(n => parseInt(n));
   const methods = bothMethods ? ['sequential', 'zigzag'] : ['sequential'];
   
-  resultsDiv.innerHTML = '<p>🔍 総当たり解読を実行中...</p>';
+  resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.43')));
   
   // 少し遅延を入れてUI更新を反映
   setTimeout(() => {
@@ -47,10 +49,11 @@ function performBruteForce() {
       for (const method of methods) {
         try {
           const decrypted = performSingleDecryption(ciphertext, railCount, method);
-          const methodName = method === 'zigzag' ? '方式2（交互）' : '方式1（順次）';
+          const methodName = method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26');
           
           results.push({
             railCount,
+            methodCode: method,
             method: methodName,
             result: decrypted,
             score: calculateReadabilityScore(decrypted)
@@ -70,47 +73,7 @@ function performBruteForce() {
 
 // 単一の復号処理
 function performSingleDecryption(text, railCount, method) {
-  const len = text.length;
-  let pattern = Array(len).fill(0);
-  let index = 0;
-  let direction = 1;
-
-  // パターン生成
-  for (let i = 0; i < len; i++) {
-    pattern[i] = index;
-    if (method === "zigzag") {
-      if (index === 0) direction = 1;
-      else if (index === railCount - 1) direction = -1;
-      index += direction;
-    } else {
-      index = (index + 1) % railCount;
-    }
-  }
-
-  // レール長計算
-  let railLengths = Array(railCount).fill(0);
-  for (let i = 0; i < len; i++) {
-    railLengths[pattern[i]]++;
-  }
-
-  // レールに文字を配置
-  let rails = [];
-  let pos = 0;
-  for (let r = 0; r < railCount; r++) {
-    rails[r] = text.slice(pos, pos + railLengths[r]).split("");
-    pos += railLengths[r];
-  }
-
-  // 復号結果を生成
-  let result = "";
-  for (let i = 0; i < len; i++) {
-    const r = pattern[i];
-    if (rails[r] && rails[r].length > 0) {
-      result += rails[r].shift();
-    }
-  }
-
-  return result;
+  return RailfenceCore.decrypt(text, railCount, method);
 }
 
 // 可読性スコア計算（簡易版）
@@ -118,7 +81,7 @@ function calculateReadabilityScore(text) {
   let score = 0;
   
   // 母音の比率をチェック
-  const vowels = text.match(/[aeiouAEIOUあいうえおアイウエオ]/g) || [];
+  const vowels = text.match(/[aeiouAEIOU\u3042\u3044\u3046\u3048\u304a\u30a2\u30a4\u30a6\u30a8\u30aa]/g) || [];
   const vowelRatio = vowels.length / text.length;
   if (vowelRatio >= 0.2 && vowelRatio <= 0.6) score += 30;
   
@@ -137,9 +100,9 @@ function calculateReadabilityScore(text) {
   }
   
   // 日本語っぽいパターン
-  const hiragana = text.match(/[あ-ん]/g) || [];
-  const katakana = text.match(/[ア-ン]/g) || [];
-  const kanji = text.match(/[一-龯]/g) || [];
+  const hiragana = text.match(/[\u3042-\u3093]/g) || [];
+  const katakana = text.match(/[\u30a2-\u30f3]/g) || [];
+  const kanji = text.match(/[\u4e00-\u9faf]/g) || [];
   if (hiragana.length > 0 || katakana.length > 0 || kanji.length > 0) {
     score += 15;
   }
@@ -153,55 +116,43 @@ function calculateReadabilityScore(text) {
 
 // 総当たり結果の表示
 function displayBruteForceResults(results) {
-  const resultsDiv = document.getElementById("bruteForceResults");
-  
-  if (results.length === 0) {
-    resultsDiv.innerHTML = '<p style="color: #ff6b6b;">復号結果が得られませんでした。</p>';
+  lastBruteForceResults = results;
+  results.forEach(result => {
+    result.method = i18n.t(result.methodCode === 'zigzag' ? 'message.25' : 'message.26');
+  });
+  const target = document.getElementById("bruteForceResults");
+  target.replaceChildren();
+  if (!results.length) {
+    target.append(uiNode("p", "", i18n.t('message.44')));
     return;
   }
-  
-  let html = '<h4>📊 総当たり解読結果</h4>';
-  html += '<p>可読性スコアが高い順に表示されています：</p>';
-  html += '<div class="lab-results-table">';
-  
+  target.append(uiNode("h4", "", i18n.t('message.45')),
+    uiNode("p", "", i18n.t('message.46')));
+  const table = uiNode("div", "lab-results-table");
   results.forEach((result, index) => {
-    const scoreClass = result.score >= 50 ? 'high-score' : result.score >= 30 ? 'medium-score' : 'low-score';
-    html += `
-      <div class="lab-result-row ${scoreClass}" data-result-index="${index}">
-        <div class="lab-result-info">
-          <strong>${index + 1}. ${result.railCount}レール・${escapeHtml(result.method)}</strong>
-          <span class="lab-score">スコア: ${result.score}</span>
-        </div>
-        <div class="lab-result-text">${escapeHtml(result.result)}</div>
-        <button class="copy-btn" data-copy-index="${index}">📋 コピー</button>
-      </div>
-    `;
+    const scoreClass = result.score >= 50 ? "high-score" : result.score >= 30 ? "medium-score" : "low-score";
+    const row = uiNode("div", "lab-result-row " + scoreClass);
+    row.dataset.resultIndex = index;
+    const info = uiNode("div", "lab-result-info");
+    info.append(uiNode("strong", "", i18n.t('message.47', [index + 1, result.railCount, result.method])),
+      uiNode("span", "lab-score", i18n.t('message.48', [result.score])));
+    row.append(info, uiNode("div", "lab-result-text", result.result), createCopyButton(result.result));
+    table.append(row);
   });
-
-  html += '</div>';
-  resultsDiv.innerHTML = html;
-
-  // コピーボタンにイベントリスナーを追加（XSS対策済み）
-  results.forEach((result, index) => {
-    const copyBtn = resultsDiv.querySelector(`button[data-copy-index="${index}"]`);
-    if (copyBtn) {
-      copyBtn.dataset.copyText = result.result;
-      copyBtn.addEventListener('click', (e) => copyToClipboard(null, e));
-    }
-  });
+  target.append(table);
 }
 
 // 統計実験
 function performStatistics() {
-  const plaintext = document.getElementById("labPlaintext").value.trim();
+  const plaintext = document.getElementById("labPlaintext").value;
   const resultsDiv = document.getElementById("statisticsResults");
   
-  if (plaintext.length === 0) {
-    resultsDiv.innerHTML = '<p style="color: #ff6b6b;">分析したい平文を入力してください。</p>';
+  if (plaintext.trim().length === 0) {
+    resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.49')));
     return;
   }
   
-  resultsDiv.innerHTML = '<p>📈 統計分析を実行中...</p>';
+  resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.50')));
   
   setTimeout(() => {
     const statistics = [];
@@ -210,10 +161,11 @@ function performStatistics() {
     for (let railCount = 2; railCount <= 6; railCount++) {
       for (const method of ['sequential', 'zigzag']) {
         const encrypted = performSingleEncryption(plaintext, railCount, method);
-        const methodName = method === 'zigzag' ? '方式2（交互）' : '方式1（順次）';
+        const methodName = method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26');
         
         statistics.push({
           railCount,
+          methodCode: method,
           method: methodName,
           original: plaintext,
           encrypted: encrypted,
@@ -228,27 +180,7 @@ function performStatistics() {
 
 // 単一の暗号化処理
 function performSingleEncryption(text, railCount, method) {
-  // 改行と空白を除去（統計用なのでシンプルに）
-  const cleaned = text.replace(/\n/g, "").replace(/\s/g, "");
-  
-  let railMatrix = Array.from({ length: railCount }, () => 
-    Array(cleaned.length).fill(null)
-  );
-  let index = 0;
-  let direction = 1;
-
-  for (let i = 0; i < cleaned.length; i++) {
-    railMatrix[index][i] = cleaned[i];
-    if (method === "zigzag") {
-      if (index === 0) direction = 1;
-      else if (index === railCount - 1) direction = -1;
-      index += direction;
-    } else {
-      index = (index + 1) % railCount;
-    }
-  }
-
-  return railMatrix.flat().filter(c => c !== null).join("");
+  return RailfenceCore.encrypt(text, railCount, method);
 }
 
 // 暗号化の分析
@@ -306,55 +238,47 @@ function calculateEntropy(frequency) {
 
 // 統計結果の表示
 function displayStatisticsResults(statistics) {
-  const resultsDiv = document.getElementById("statisticsResults");
-  
-  let html = '<h4>📊 統計分析結果</h4>';
-  html += '<div class="lab-stats-grid">';
-  
-  statistics.forEach((stat, index) => {
-    html += `
-      <div class="lab-stat-card" data-stat-index="${index}">
-        <div class="lab-stat-header">
-          <h5>${stat.railCount}レール・${escapeHtml(stat.method)}</h5>
-        </div>
-        <div class="lab-stat-content">
-          <p><strong>暗号文:</strong> ${escapeHtml(stat.encrypted)}</p>
-          <div class="lab-stat-metrics">
-            <div>平均移動距離: <span class="metric-value">${stat.analysis.avgMovement.toFixed(1)}</span></div>
-            <div>最大移動距離: <span class="metric-value">${stat.analysis.maxMovement}</span></div>
-            <div>エントロピー変化: <span class="metric-value">${(stat.analysis.encryptedEntropy - stat.analysis.originalEntropy).toFixed(2)}</span></div>
-          </div>
-          <button class="copy-btn" data-copy-stat-index="${index}">📋 コピー</button>
-        </div>
-      </div>
-    `;
+  lastStatisticsResults = statistics;
+  statistics.forEach(stat => {
+    stat.method = i18n.t(stat.methodCode === 'zigzag' ? 'message.25' : 'message.26');
   });
-  
-  html += '</div>';
-  
-  // 総合分析
+  const target = document.getElementById("statisticsResults");
+  target.replaceChildren(uiNode("h4", "", i18n.t('message.51')));
+  const grid = uiNode("div", "lab-stats-grid");
+  statistics.forEach((stat, index) => {
+    const card = uiNode("div", "lab-stat-card");
+    card.dataset.statIndex = index;
+    const header = uiNode("div", "lab-stat-header");
+    header.append(uiNode("h5", "", i18n.t('message.52', [stat.railCount, stat.method])));
+    const content = uiNode("div", "lab-stat-content");
+    content.append(uiNode("p", "", i18n.t('message.53', [stat.encrypted])));
+    const metrics = uiNode("div", "lab-stat-metrics");
+    const values = [
+      [i18n.t('message.54'), stat.analysis.avgMovement.toFixed(1)],
+      [i18n.t('message.55'), stat.analysis.maxMovement],
+      [i18n.t('message.56'), (stat.analysis.encryptedEntropy - stat.analysis.originalEntropy).toFixed(2)]
+    ];
+    values.forEach(([label, value]) => {
+      const line = uiNode("div", "", label + ": ");
+      line.append(uiNode("span", "metric-value", value));
+      metrics.append(line);
+    });
+    content.append(metrics, createCopyButton(stat.encrypted));
+    card.append(header, content);
+    grid.append(card);
+  });
+  target.append(grid);
+
+  // Keep the existing first-maximum tie break and movement calculation.
   const avgMovements = statistics.map(s => s.analysis.avgMovement);
   const maxAvgMovement = Math.max(...avgMovements);
-  const bestMethodIndex = avgMovements.indexOf(maxAvgMovement);
-  const bestMethod = statistics[bestMethodIndex];
-  
-  html += `
-    <div class="lab-summary">
-      <h5>📋 分析サマリー</h5>
-      <p><strong>最も文字を分散させる設定:</strong> ${bestMethod.railCount}レール・${escapeHtml(bestMethod.method)}</p>
-      <p><strong>平均移動距離:</strong> ${maxAvgMovement.toFixed(1)} 文字</p>
-      <p>移動距離が大きいほど、元の文字順序が隠蔽されています。</p>
-    </div>
-  `;
-
-  resultsDiv.innerHTML = html;
-
-  // コピーボタンにイベントリスナーを追加（XSS対策済み）
-  statistics.forEach((stat, index) => {
-    const copyBtn = resultsDiv.querySelector(`button[data-copy-stat-index="${index}"]`);
-    if (copyBtn) {
-      copyBtn.dataset.copyText = stat.encrypted;
-      copyBtn.addEventListener('click', (e) => copyToClipboard(null, e));
-    }
-  });
+  const bestMethod = statistics[avgMovements.indexOf(maxAvgMovement)];
+  const summary = uiNode("div", "lab-summary");
+  summary.append(
+    uiNode("h5", "", i18n.t('message.57')),
+    uiNode("p", "", i18n.t('message.58', [bestMethod.railCount, bestMethod.method])),
+    uiNode("p", "", i18n.t('message.59', [maxAvgMovement.toFixed(1)])),
+    uiNode("p", "", i18n.t('message.60'))
+  );
+  target.append(summary);
 }

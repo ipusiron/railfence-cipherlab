@@ -3,41 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>RailFence CipherLab</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <noscript data-i18n="ui.0">このツールにはJavaScriptが必要です。<br>JavaScript is required to use this tool.</noscript>
   <header>
     <div class="header-content">
       <div class="header-text">
         <h1>RailFence CipherLab</h1>
-        <p>レールフェンス暗号を視覚的に学ぶツール</p>
+        <p data-i18n="ui.1">レールフェンス暗号を視覚的に学ぶツール</p>
       </div>
-      <button class="help-button" onclick="openHelpModal()" title="ヘルプ">?</button>
+      <div class="header-buttons">
+        <button type="button" id="languageButton" data-i18n="language.toggle"
+          data-i18n-aria-label="language.label" aria-label="英語に切り替える">English</button>
+        <button type="button" class="help-button" data-action="openHelpModal" title="ヘルプ" data-i18n-title="ui.2">?</button>
+      </div>
     </div>
   </header>
 
-  <div class="tabs">
-    <button class="tab-button active" data-tab="encrypt">暗号化</button>
-    <button class="tab-button" data-tab="decrypt">復号</button>
-    <button class="tab-button" data-tab="study">座学</button>
-    <button class="tab-button" data-tab="lab">実験室</button>
+  <div class="tabs" role="tablist" aria-label="機能" data-i18n-aria-label="ui.3">
+    <button type="button" class="tab-button active" data-tab="encrypt" id="tab-encrypt"
+      role="tab" aria-controls="encrypt" aria-selected="true" tabindex="0" data-i18n="ui.4">暗号化</button>
+    <button type="button" class="tab-button" data-tab="decrypt" id="tab-decrypt"
+      role="tab" aria-controls="decrypt" aria-selected="false" tabindex="-1" data-i18n="ui.5">復号</button>
+    <button type="button" class="tab-button" data-tab="study" id="tab-study"
+      role="tab" aria-controls="study" aria-selected="false" tabindex="-1" data-i18n="ui.6">座学</button>
+    <button type="button" class="tab-button" data-tab="lab" id="tab-lab"
+      role="tab" aria-controls="lab" aria-selected="false" tabindex="-1" data-i18n="ui.7">実験室</button>
   </div>
 
-  <div class="tab-content" id="encrypt">
-    <h2>暗号化</h2>
+  <div class="tab-content" id="encrypt" role="tabpanel" aria-labelledby="tab-encrypt">
+    <h2 data-i18n="ui.4">暗号化</h2>
     <div class="sample-buttons">
-      <button class="sample-btn" onclick="loadSample(1)">サンプル1</button>
-      <button class="sample-btn" onclick="loadSample(2)">サンプル2</button>
-      <button class="sample-btn" onclick="clearText()">クリア</button>
+      <button type="button" class="sample-btn" data-action="loadSample" data-sample="1" data-i18n="ui.8">サンプル1</button>
+      <button type="button" class="sample-btn" data-action="loadSample" data-sample="2" data-i18n="ui.9">サンプル2</button>
+      <button type="button" class="sample-btn" data-action="clearText" data-i18n="ui.10">クリア</button>
     </div>
-    <textarea id="plaintext" rows="4" placeholder="平文を入力してください"></textarea>
-    <div id="warning-area"></div>
-    <label><input type="checkbox" id="removeSpace" /> 空白を除いて処理する</label>
-    <label><input type="checkbox" id="removeSymbol" /> 記号を除いて処理する</label>
+    <textarea id="plaintext" maxlength="500" rows="4" placeholder="平文を入力してください" data-i18n-placeholder="ui.11"></textarea>
+    <div id="warning-area" aria-live="polite"></div>
+    <label><input type="checkbox" id="removeSpace" /> <span data-i18n="ui.12">空白を除いて処理する</span></label>
+    <label><input type="checkbox" id="removeSymbol" /> <span data-i18n="ui.13">記号を除いて処理する</span></label>
 
     <div>
-      <label>レール数:
+      <label><span data-i18n="ui.14">レール数:</span>
         <select id="railCount">
           <option value="2">2</option>
           <option value="3">3</option>
@@ -46,59 +58,59 @@
           <option value="6">6</option>
         </select>
       </label>
-      <label>方式:
+      <label><span data-i18n="ui.15">方式:</span>
         <select id="method">
-          <option value="sequential">方式1（順次）</option>
-          <option value="zigzag">方式2（交互）</option>
+          <option value="sequential" data-i18n="ui.16">方式1（順次）</option>
+          <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
         </select>
       </label>
     </div>
 
     <label>
-      <input type="checkbox" id="realtimeMode" checked> リアルタイム暗号化
+      <input type="checkbox" id="realtimeMode" checked> <span data-i18n="ui.18">リアルタイム暗号化</span>
     </label>
-    <button id="encryptBtn" onclick="encrypt()" disabled>暗号化する</button>
+    <button type="button" id="encryptBtn" data-action="encrypt" disabled data-i18n="ui.19">暗号化する</button>
     
     <div class="readonly-box" id="cleanedText"></div>
     
     <div id="animationControls" class="animation-controls hidden">
-      <button id="playBtn" onclick="toggleAnimation()">▶ 再生</button>
-      <button onclick="resetAnimation()">⏹ リセット</button>
-      <label>速度:
-        <input type="range" id="animationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります">
+      <button type="button" id="playBtn" data-action="toggleAnimation" data-i18n="ui.20">▶ 再生</button>
+      <button type="button" data-action="resetAnimation" data-i18n="ui.21">⏹ リセット</button>
+      <label><span data-i18n="ui.22">速度:</span>
+        <input type="range" id="animationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります" data-i18n-title="ui.23">
         <span id="speedDisplay">100ms</span>
       </label>
     </div>
     
     <div id="railDisplay"></div>
     <div class="readonly-box" id="intermediateText"></div>
-    <div id="cipherResult"></div>
+    <div id="cipherResult" aria-live="polite"></div>
     
     <div id="exportControls" class="export-controls hidden">
-      <button onclick="exportAsImage()">📷 画像で保存</button>
-      <button onclick="exportAsText()">📄 テキストで保存</button>
-      <button onclick="printRailGrid()">🖨 印刷</button>
+      <button type="button" data-action="exportAsImage" data-i18n="ui.24">📷 画像で保存</button>
+      <button type="button" data-action="exportAsText" data-i18n="ui.25">📄 テキストで保存</button>
+      <button type="button" data-action="printRailGrid" data-i18n="ui.26">🖨 印刷</button>
     </div>
   </div>
 
-  <div class="tab-content hidden" id="decrypt">
-    <h2>復号</h2>
+  <div class="tab-content hidden" id="decrypt" role="tabpanel" aria-labelledby="tab-decrypt">
+    <h2 data-i18n="ui.5">復号</h2>
     
     <div class="sync-controls-top">
-      <button id="syncFromEncrypt" onclick="syncFromEncryptTab()">🔄 暗号化タブの設定を同期</button>
+      <button type="button" id="syncFromEncrypt" data-action="syncFromEncryptTab" data-i18n="ui.27">🔄 暗号化タブの設定を同期</button>
       <span id="syncStatus" class="sync-status"></span>
     </div>
     
     <div class="sample-buttons">
-      <button class="sample-btn" onclick="loadDecryptSample(1)">サンプル1</button>
-      <button class="sample-btn" onclick="loadDecryptSample(2)">サンプル2</button>
-      <button class="sample-btn" onclick="clearDecryptText()">クリア</button>
+      <button type="button" class="sample-btn" data-action="loadDecryptSample" data-sample="1" data-i18n="ui.8">サンプル1</button>
+      <button type="button" class="sample-btn" data-action="loadDecryptSample" data-sample="2" data-i18n="ui.9">サンプル2</button>
+      <button type="button" class="sample-btn" data-action="clearDecryptText" data-i18n="ui.10">クリア</button>
     </div>
-    <textarea id="ciphertext" rows="4" placeholder="暗号文を入力してください"></textarea>
-    <div id="decryptWarningArea"></div>
+    <textarea id="ciphertext" maxlength="500" rows="4" placeholder="暗号文を入力してください" data-i18n-placeholder="ui.28"></textarea>
+    <div id="decryptWarningArea" aria-live="polite"></div>
     
     <div>
-      <label>レール数:
+      <label><span data-i18n="ui.14">レール数:</span>
         <select id="decryptRailCount">
           <option value="2">2</option>
           <option value="3">3</option>
@@ -107,74 +119,74 @@
           <option value="6">6</option>
         </select>
       </label>
-      <label>方式:
+      <label><span data-i18n="ui.15">方式:</span>
         <select id="decryptMethod">
-          <option value="sequential">方式1（順次）</option>
-          <option value="zigzag">方式2（交互）</option>
+          <option value="sequential" data-i18n="ui.16">方式1（順次）</option>
+          <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
         </select>
       </label>
     </div>
 
     <label>
-      <input type="checkbox" id="decryptRealtimeMode" checked> リアルタイム復号
+      <input type="checkbox" id="decryptRealtimeMode" checked> <span data-i18n="ui.29">リアルタイム復号</span>
     </label>
-    <button id="decryptBtn" onclick="decrypt()" disabled>復号する</button>
+    <button type="button" id="decryptBtn" data-action="decrypt" disabled data-i18n="ui.30">復号する</button>
     
     <div id="decryptAnimationControls" class="animation-controls hidden">
-      <button id="decryptPlayBtn" onclick="toggleDecryptAnimation()">▶ 再生</button>
-      <button onclick="resetDecryptAnimation()">⏹ リセット</button>
-      <label>速度:
-        <input type="range" id="decryptAnimationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります">
+      <button type="button" id="decryptPlayBtn" data-action="toggleDecryptAnimation" data-i18n="ui.20">▶ 再生</button>
+      <button type="button" data-action="resetDecryptAnimation" data-i18n="ui.21">⏹ リセット</button>
+      <label><span data-i18n="ui.22">速度:</span>
+        <input type="range" id="decryptAnimationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります" data-i18n-title="ui.23">
         <span id="decryptSpeedDisplay">100ms</span>
       </label>
     </div>
     <div id="decryptDisplay"></div>
     <div class="readonly-box" id="decryptIntermediateText"></div>
-    <div id="plainResult"></div>
+    <div id="plainResult" aria-live="polite"></div>
     
     <div id="decryptExportControls" class="export-controls hidden">
-      <button onclick="exportDecryptAsImage()">📷 画像で保存</button>
-      <button onclick="exportDecryptAsText()">📄 テキストで保存</button>
-      <button onclick="printDecryptRailGrid()">🖨 印刷</button>
+      <button type="button" data-action="exportDecryptAsImage" data-i18n="ui.24">📷 画像で保存</button>
+      <button type="button" data-action="exportDecryptAsText" data-i18n="ui.25">📄 テキストで保存</button>
+      <button type="button" data-action="printDecryptRailGrid" data-i18n="ui.26">🖨 印刷</button>
     </div>
   </div>
 
-  <div class="tab-content hidden" id="study">
-    <h2>📚 レールフェンス暗号について学ぼう</h2>
+  <div class="tab-content hidden" id="study" role="tabpanel" aria-labelledby="tab-study">
+    <h2 data-i18n="ui.31">📚 レールフェンス暗号について学ぼう</h2>
     
     <div class="study-section">
-      <h3>🔒 レールフェンス暗号とは？</h3>
-      <p>レールフェンス暗号（Rail Fence Cipher）は、<strong>転置式暗号</strong>の一種で、文字をレール（鉄道のレール）状に並べて並び順を変えることで暗号化する古典暗号です。</p>
+      <h3 data-i18n="ui.32">🔒 レールフェンス暗号とは？</h3>
+      <p><span data-i18n="ui.33">レールフェンス暗号（Rail Fence Cipher）は、</span><strong data-i18n="ui.34">転置式暗号</strong><span data-i18n="ui.35">の一種で、文字をレール（鉄道のレール）状に並べて並び順を変えることで暗号化する古典暗号です。</span></p>
       
       <div class="study-highlight">
-        <h4>💡 基本的な仕組み</h4>
+        <h4 data-i18n="ui.36">💡 基本的な仕組み</h4>
         <ol>
-          <li>平文の文字を複数のレール（行）に配置</li>
-          <li>各レールから順番に文字を読み取り</li>
-          <li>読み取った順序で文字を並べて暗号文を作成</li>
+          <li data-i18n="ui.37">平文の文字を複数のレール（行）に配置</li>
+          <li data-i18n="ui.38">各レールから順番に文字を読み取り</li>
+          <li data-i18n="ui.39">読み取った順序で文字を並べて暗号文を作成</li>
         </ol>
       </div>
     </div>
 
     <div class="study-section">
-      <h3>🚂 歴史と背景</h3>
-      <p>レールフェンス暗号は古代から使われている転置式暗号の一つで、その名前は文字の配置パターンが鉄道のレールに似ていることに由来します。</p>
+      <h3 data-i18n="ui.40">🚂 歴史と背景</h3>
+      <p data-i18n="ui.41">レールフェンス暗号は古代から使われている転置式暗号の一つで、その名前は文字の配置パターンが鉄道のレールに似ていることに由来します。</p>
       <ul>
-        <li><strong>古典暗号</strong>：コンピュータ以前の時代から使用</li>
-        <li><strong>手計算可能</strong>：紙とペンがあれば実行できる</li>
-        <li><strong>教育用途</strong>：暗号学の基礎概念を学ぶのに適している</li>
-        <li><strong>現代での位置付け</strong>：実用性は低いが、暗号学習の入門として重要</li>
+        <li><strong data-i18n="ui.42">古典暗号</strong><span data-i18n="ui.43">：コンピュータ以前の時代から使用</span></li>
+        <li><strong data-i18n="ui.44">手計算可能</strong><span data-i18n="ui.45">：紙とペンがあれば実行できる</span></li>
+        <li><strong data-i18n="ui.46">教育用途</strong><span data-i18n="ui.47">：暗号学の基礎概念を学ぶのに適している</span></li>
+        <li><strong data-i18n="ui.48">現代での位置付け</strong><span data-i18n="ui.49">：実用性は低いが、暗号学習の入門として重要</span></li>
       </ul>
     </div>
 
     <div class="study-section">
-      <h3>⚙️ 暗号化方式の詳細</h3>
+      <h3 data-i18n="ui.50">⚙️ 暗号化方式の詳細</h3>
       
-      <h4>🔹 方式1（順次配置）</h4>
+      <h4 data-i18n="ui.51">🔹 方式1（順次配置）</h4>
       <div class="method-explanation">
-        <p>文字を順番に各レールに配置していく方式です。縦列転置暗号と同じ構造を持ちます。</p>
+        <p data-i18n="ui.52">文字を順番に各レールに配置していく方式です。縦列転置暗号と同じ構造を持ちます。</p>
         <div class="example-box">
-          <strong>例：</strong> "HELLO" を3レールで暗号化<br><br>
+          <strong data-i18n="ui.53">例：</strong> <span data-i18n="ui.54">"HELLO" を3レールで暗号化</span><br><br>
           <div class="rail-example">
             <div class="rail-example-grid">
               <div class="rail-label">Rail 1:</div>
@@ -199,15 +211,15 @@
               <div class="rail-cell empty">-</div>
             </div>
           </div>
-          <strong>結果：</strong> "HL" + "EO" + "L" = "HLEOL"
+          <strong data-i18n="ui.55">結果：</strong> "HL" + "EO" + "L" = "HLEOL"
         </div>
       </div>
 
-      <h4>🔹 方式2（ジグザグ配置）</h4>
+      <h4 data-i18n="ui.56">🔹 方式2（ジグザグ配置）</h4>
       <div class="method-explanation">
-        <p>文字を上下に蛇行させながら配置する方式です。より複雑な配置パターンを作ります。</p>
+        <p data-i18n="ui.57">文字を上下に蛇行させながら配置する方式です。より複雑な配置パターンを作ります。</p>
         <div class="example-box">
-          <strong>例：</strong> "HELLO" を3レールで暗号化<br><br>
+          <strong data-i18n="ui.53">例：</strong> <span data-i18n="ui.54">"HELLO" を3レールで暗号化</span><br><br>
           <div class="rail-example">
             <div class="rail-example-grid">
               <div class="rail-label">Rail 1:</div>
@@ -232,86 +244,86 @@
               <div class="rail-cell empty">-</div>
             </div>
           </div>
-          <strong>結果：</strong> "HO" + "EL" + "L" = "HOELL"
+          <strong data-i18n="ui.55">結果：</strong> "HO" + "EL" + "L" = "HOELL"
         </div>
       </div>
     </div>
 
     <div class="study-section">
-      <h3>🛡️ セキュリティの特徴</h3>
+      <h3 data-i18n="ui.58">🛡️ セキュリティの特徴</h3>
       
-      <h4>📈 暗号化の強度</h4>
+      <h4 data-i18n="ui.59">📈 暗号化の強度</h4>
       <ul>
-        <li><strong>レール数の影響</strong>：レール数が多いほど複雑になる</li>
-        <li><strong>文字長の影響</strong>：長い文章ほど解読が困難</li>
-        <li><strong>方式の選択</strong>：ジグザグ方式の方がやや複雑</li>
+        <li><strong data-i18n="ui.60">レール数の影響</strong><span data-i18n="ui.61">：レール数が多いほど複雑になる</span></li>
+        <li><strong data-i18n="ui.62">文字長の影響</strong><span data-i18n="ui.63">：鍵（レール数と方式）の数は文の長さでは増えない。長い文ほど、総当たりの候補から正しい文を見分けやすい</span></li>
+        <li><strong data-i18n="ui.64">方式の選択</strong><span data-i18n="ui.65">：ジグザグ方式の方がやや複雑</span></li>
       </ul>
 
-      <h4>⚠️ セキュリティの弱点</h4>
+      <h4 data-i18n="ui.66">⚠️ セキュリティの弱点</h4>
       <ul>
-        <li><strong>頻度分析に弱い</strong>：文字の出現頻度は変わらない</li>
-        <li><strong>鍵空間が狭い</strong>：レール数と方式のみが鍵</li>
-        <li><strong>総当たり攻撃</strong>：現代では容易に解読可能</li>
-        <li><strong>パターン推測</strong>：短い文章では配置が推測しやすい</li>
+        <li><strong data-i18n="ui.67">転置式だと見抜かれやすい</strong><span data-i18n="ui.68">：文字の出現頻度が平文と同じなので、頻度を見れば換字式でなく転置式だと分かる（頻度分析で平文が求まるわけではない）</span></li>
+        <li><strong data-i18n="ui.69">鍵空間が狭い</strong><span data-i18n="ui.70">：レール数と方式のみが鍵</span></li>
+        <li><strong data-i18n="ui.71">総当たり攻撃</strong><span data-i18n="ui.72">：現代では容易に解読可能</span></li>
+        <li><strong data-i18n="ui.73">パターン推測</strong><span data-i18n="ui.74">：短い文章では配置が推測しやすい</span></li>
       </ul>
     </div>
 
     <div class="study-section">
-      <h3>🔍 解読方法と対策</h3>
+      <h3 data-i18n="ui.75">🔍 解読方法と対策</h3>
       
-      <h4>👨‍💻 攻撃者の手法</h4>
+      <h4 data-i18n="ui.76">👨‍💻 攻撃者の手法</h4>
       <ol>
-        <li><strong>総当たり攻撃</strong>：全てのレール数・方式を試行</li>
-        <li><strong>頻度分析</strong>：言語の特性を利用した解読</li>
-        <li><strong>辞書攻撃</strong>：既知の単語パターンとの照合</li>
-        <li><strong>文脈推測</strong>：部分的に解読した内容から推測</li>
+        <li><strong data-i18n="ui.71">総当たり攻撃</strong><span data-i18n="ui.77">：すべてのレール数・方式を試行</span></li>
+        <li><strong data-i18n="ui.78">頻度の比較</strong><span data-i18n="ui.79">：暗号文の文字の頻度が言語の頻度と同じなら、転置式と見分ける</span></li>
+        <li><strong data-i18n="ui.80">辞書攻撃</strong><span data-i18n="ui.81">：既知の単語パターンとの照合</span></li>
+        <li><strong data-i18n="ui.82">文脈推測</strong><span data-i18n="ui.83">：部分的に解読した内容から推測</span></li>
       </ol>
 
-      <h4>🛠️ 防御の改善方法</h4>
+      <h4 data-i18n="ui.84">🛠️ 防御の改善方法</h4>
       <ul>
-        <li><strong>他の暗号との組み合わせ</strong>：置換暗号と併用</li>
-        <li><strong>ダミー文字や冗字の挿入</strong>：解読を困難にする</li>
-        <li><strong>複数回の適用</strong>：異なる設定で重ねて暗号化</li>
-        <li><strong>可変レール数</strong>：位置によってレール数を変える</li>
+        <li><strong data-i18n="ui.85">他の暗号との組み合わせ</strong><span data-i18n="ui.86">：置換暗号と併用</span></li>
+        <li><strong data-i18n="ui.87">ダミー文字や冗字の挿入</strong><span data-i18n="ui.88">：解読を困難にする</span></li>
+        <li><strong data-i18n="ui.89">複数回の適用</strong><span data-i18n="ui.90">：異なる設定で重ねて暗号化</span></li>
+        <li><strong data-i18n="ui.91">可変レール数</strong><span data-i18n="ui.92">：位置によってレール数を変える</span></li>
       </ul>
     </div>
 
     <div class="study-section">
-      <h3>🎯 学習のポイント</h3>
+      <h3 data-i18n="ui.93">🎯 学習のポイント</h3>
       
       <div class="study-highlight">
-        <h4>📝 理解を深めるために</h4>
+        <h4 data-i18n="ui.94">📝 理解を深めるために</h4>
         <ol>
-          <li><strong>手作業で試す</strong>：短い文章で実際に暗号化してみる</li>
-          <li><strong>方式の比較</strong>：同じ文章を異なる方式で暗号化</li>
-          <li><strong>レール数の実験</strong>：レール数による変化を観察</li>
-          <li><strong>解読練習</strong>：暗号文から平文を復元してみる</li>
-          <li><strong>脆弱性の体感</strong>：実験室タブで総当たり攻撃を試す</li>
+          <li><strong data-i18n="ui.95">手作業で試す</strong><span data-i18n="ui.96">：短い文章で実際に暗号化してみる</span></li>
+          <li><strong data-i18n="ui.97">方式の比較</strong><span data-i18n="ui.98">：同じ文章を異なる方式で暗号化</span></li>
+          <li><strong data-i18n="ui.99">レール数の実験</strong><span data-i18n="ui.100">：レール数による変化を観察</span></li>
+          <li><strong data-i18n="ui.101">解読練習</strong><span data-i18n="ui.102">：暗号文から平文を復元してみる</span></li>
+          <li><strong data-i18n="ui.103">脆弱性の体感</strong><span data-i18n="ui.104">：実験室タブで総当たり攻撃を試す</span></li>
         </ol>
       </div>
 
       <div class="study-tips">
-        <h4>💡 このツールの活用法</h4>
+        <h4 data-i18n="ui.105">💡 このツールの活用法</h4>
         <ul>
-          <li><strong>暗号化タブ</strong>：リアルタイムで暗号化過程を観察</li>
-          <li><strong>復号タブ</strong>：復号の仕組みを理解</li>
-          <li><strong>実験室タブ</strong>：総当たり攻撃や統計分析を体験</li>
-          <li><strong>アニメーション</strong>：文字配置の過程を視覚的に学習</li>
+          <li><strong data-i18n="ui.106">暗号化タブ</strong><span data-i18n="ui.107">：リアルタイムで暗号化過程を観察</span></li>
+          <li><strong data-i18n="ui.108">復号タブ</strong><span data-i18n="ui.109">：復号の仕組みを理解</span></li>
+          <li><strong data-i18n="ui.110">実験室タブ</strong><span data-i18n="ui.111">：総当たり攻撃や統計分析を体験</span></li>
+          <li><strong data-i18n="ui.112">アニメーション</strong><span data-i18n="ui.113">：文字配置の過程を視覚的に学習</span></li>
         </ul>
       </div>
     </div>
 
     <div class="study-section">
-      <h3>🌍 現代暗号学への発展</h3>
-      <p>レールフェンス暗号は現代では実用的ではありませんが、暗号学の基礎概念を理解する上で重要な位置を占めています。</p>
+      <h3 data-i18n="ui.114">🌍 現代暗号学への発展</h3>
+      <p data-i18n="ui.115">レールフェンス暗号は現代では実用的ではありませんが、暗号学の基礎概念を理解する上で重要な位置を占めています。</p>
       
-      <h4>🔗 関連する現代技術</h4>
+      <h4 data-i18n="ui.116">🔗 関連する現代技術</h4>
       <ul>
-        <li><strong>ブロック暗号</strong>：転置の概念が発展</li>
-        <li><strong>ストリーム暗号</strong>：逐次処理の原理</li>
-        <li><strong>ハッシュ関数</strong>：データの混合手法</li>
-        <li><strong>公開鍵暗号</strong>：より高度な数学的基盤
-          <div class="crypto-explanation">
+        <li><strong data-i18n="ui.117">ブロック暗号</strong><span data-i18n="ui.118">：転置の概念が発展</span></li>
+        <li><strong data-i18n="ui.119">ストリーム暗号</strong><span data-i18n="ui.120">：逐次処理の原理</span></li>
+        <li><strong data-i18n="ui.121">ハッシュ関数</strong><span data-i18n="ui.122">：データの混合手法</span></li>
+        <li><strong data-i18n="ui.123">公開鍵暗号</strong><span data-i18n="ui.124">：より高度な数学的基盤</span>
+          <div class="crypto-explanation" data-i18n="ui.125">
             レールフェンス暗号のような古典暗号は「物理的な配置」による転置でしたが、公開鍵暗号は「数学的な一方向性」を利用します。例えば、大きな素数の掛け算（簡単）と素因数分解（困難）の計算量の差を暗号化の根拠とするRSA暗号や、楕円曲線上の離散対数問題を利用するECC暗号など、レールフェンス暗号では扱わない高度な数論や代数幾何学が基盤となっています。これにより、古典暗号の「鍵の共有問題」を根本的に解決し、インターネット時代の安全な通信を実現しています。
           </div>
         </li>
@@ -319,166 +331,164 @@
     </div>
   </div>
 
-  <div class="tab-content hidden" id="lab">
-    <h2>実験室</h2>
-    <p>レールフェンス暗号の様々な実験を行うことができます。</p>
+  <div class="tab-content hidden" id="lab" role="tabpanel" aria-labelledby="tab-lab">
+    <h2 data-i18n="ui.7">実験室</h2>
+    <p data-i18n="ui.126">レールフェンス暗号の様々な実験を行うことができます。</p>
     
     <div class="experiment-section">
-      <h3>🔬 総当たり解読実験</h3>
-      <p>暗号文に対して様々なレール数・方式で復号を試行し、可能性のある平文を表示します。</p>
+      <h3 data-i18n="ui.127">🔬 総当たり解読実験</h3>
+      <p data-i18n="ui.128">暗号文に対して様々なレール数・方式で復号を試行し、可能性のある平文を表示します。</p>
       <div class="experiment-info">
         <details>
-          <summary>📊 スコアリング方式について</summary>
+          <summary data-i18n="ui.129">📊 スコアリング方式について</summary>
           <ul>
-            <li><strong>母音比率:</strong> 自然な言語の母音比率（20-60%）に近いほど高得点</li>
-            <li><strong>連続文字:</strong> 同じ文字の連続が少ないほど高得点</li>
-            <li><strong>単語パターン:</strong> 一般的な英単語や日本語パターンを含むほど高得点</li>
-            <li><strong>空白・記号:</strong> 適度な空白や記号があるほど高得点</li>
+            <li><strong data-i18n="ui.130">母音比率:</strong> <span data-i18n="ui.131">自然な言語の母音比率（20-60%）に近いほど高得点</span></li>
+            <li><strong data-i18n="ui.132">連続文字:</strong> <span data-i18n="ui.133">同じ文字の連続が少ないほど高得点</span></li>
+            <li><strong data-i18n="ui.134">単語パターン:</strong> <span data-i18n="ui.135">一般的な英単語や日本語パターンを含むほど高得点</span></li>
+            <li><strong data-i18n="ui.136">空白・記号:</strong> <span data-i18n="ui.137">適度な空白や記号があるほど高得点</span></li>
           </ul>
-          <p><small>※ スコアは参考値です。実際の解読では文脈も重要な判断材料となります。</small></p>
+          <p><small data-i18n="ui.138">※ スコアは参考値です。実際の解読では文脈も重要な判断材料となります。</small></p>
         </details>
       </div>
       
       <div class="experiment-input">
-        <label>解読したい暗号文:</label>
-        <textarea id="labCiphertext" rows="3" placeholder="解読したい暗号文を入力してください"></textarea>
+        <label for="labCiphertext" data-i18n="ui.139">解読したい暗号文:</label>
+        <textarea id="labCiphertext" maxlength="500" rows="3" placeholder="解読したい暗号文を入力してください" data-i18n-placeholder="ui.140"></textarea>
       </div>
       
       <div class="experiment-controls">
-        <label>試行するレール数:
+        <label><span data-i18n="ui.141">試行するレール数:</span>
           <select id="labRailRange">
-            <option value="2-6">2-6レール</option>
-            <option value="2-3">2-3レール</option>
-            <option value="2-4">2-4レール</option>
-            <option value="3-5">3-5レール</option>
-            <option value="4-6">4-6レール</option>
+            <option value="2-6" data-i18n="ui.142">2-6レール</option>
+            <option value="2-3" data-i18n="ui.143">2-3レール</option>
+            <option value="2-4" data-i18n="ui.144">2-4レール</option>
+            <option value="3-5" data-i18n="ui.145">3-5レール</option>
+            <option value="4-6" data-i18n="ui.146">4-6レール</option>
           </select>
         </label>
         <label>
-          <input type="checkbox" id="labBothMethods" checked> 両方式を試行
+          <input type="checkbox" id="labBothMethods" checked> <span data-i18n="ui.147">両方式を試行</span>
         </label>
       </div>
       
-      <button id="bruteForceBtn" onclick="performBruteForce()">🔍 総当たり解読開始</button>
+      <button type="button" id="bruteForceBtn" disabled data-action="performBruteForce" data-i18n="ui.148">🔍 総当たり解読開始</button>
       
-      <div id="bruteForceResults" class="experiment-results"></div>
+      <div id="bruteForceResults" aria-live="polite" class="experiment-results"></div>
     </div>
     
     <div class="experiment-section">
-      <h3>📊 統計実験</h3>
-      <p>異なる設定での暗号化パターンを比較分析します。</p>
+      <h3 data-i18n="ui.149">📊 統計実験</h3>
+      <p data-i18n="ui.150">異なる設定での暗号化パターンを比較分析します。</p>
       <div class="experiment-info">
         <details>
-          <summary>🔍 この実験で分かること</summary>
+          <summary data-i18n="ui.151">🔍 この実験で分かること</summary>
           <ul>
-            <li><strong>最適な鍵の選択:</strong> 入力した平文に対して、どのレール数・方式が最も効果的に元の文字順序を隠蔽するかを比較</li>
-            <li><strong>文字の移動距離:</strong> 各設定で文字がどれだけ元の位置から移動するかを数値化（大きいほど安全）</li>
-            <li><strong>エントロピー変化:</strong> 暗号化により文字分布がどれだけランダムになるかを測定</li>
-            <li><strong>セキュリティレベル:</strong> 文字長や内容に応じた最適な暗号化強度の判定</li>
+            <li><strong data-i18n="ui.152">最適な鍵の選択:</strong> <span data-i18n="ui.153">入力した平文に対して、どのレール数・方式が最も効果的に元の文字順序を隠蔽するかを比較</span></li>
+            <li><strong data-i18n="ui.154">文字の移動距離:</strong> <span data-i18n="ui.155">各設定で文字がどれだけ元の位置から移動するかを数値化（大きいほど元の並びから離れる。安全さの指標ではない）</span></li>
+            <li><strong data-i18n="ui.156">エントロピー変化:</strong> <span data-i18n="ui.157">転置では文字の出現回数が変わらないので、常に0になる（転置式の特徴）</span></li>
           </ul>
-          <p><small>💡 <strong>実用例:</strong> 短いメッセージには高いレール数、長いメッセージには方式2（交互）が効果的な場合が多いです。</small></p>
         </details>
       </div>
       
       <div class="experiment-input">
-        <label>分析したい平文:</label>
-        <textarea id="labPlaintext" rows="3" placeholder="分析したい平文を入力してください"></textarea>
+        <label for="labPlaintext" data-i18n="ui.158">分析したい平文:</label>
+        <textarea id="labPlaintext" maxlength="500" rows="3" placeholder="分析したい平文を入力してください" data-i18n-placeholder="ui.159"></textarea>
       </div>
       
-      <button onclick="performStatistics()">📈 統計分析開始</button>
+      <button type="button" id="statisticsBtn" disabled data-action="performStatistics" data-i18n="ui.160">📈 統計分析開始</button>
       
-      <div id="statisticsResults" class="experiment-results"></div>
+      <div id="statisticsResults" aria-live="polite" class="experiment-results"></div>
     </div>
   </div>
 
   <!-- ヘルプモーダル -->
-  <div id="helpModal" class="modal hidden">
+  <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>📚 RailFence CipherLab ヘルプ</h2>
-        <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+        <h2 id="helpTitle" data-i18n="ui.161">📚 RailFence CipherLab ヘルプ</h2>
+        <button type="button" class="modal-close" aria-label="ヘルプを閉じる" data-action="closeHelpModal" data-i18n-aria-label="ui.162">&times;</button>
       </div>
       <div class="modal-body">
         <div class="help-section">
-          <h3>🔧 基本的な使い方</h3>
-          <h4>暗号化タブ</h4>
+          <h3 data-i18n="ui.163">🔧 基本的な使い方</h3>
+          <h4 data-i18n="ui.106">暗号化タブ</h4>
           <ul>
-            <li><strong>平文入力</strong>：暗号化したい文字を入力</li>
-            <li><strong>サンプルボタン</strong>：学習用のサンプル文章を読み込み</li>
-            <li><strong>レール数</strong>：2〜6レールから選択</li>
-            <li><strong>方式選択</strong>：順次配置またはジグザグ配置</li>
-            <li><strong>リアルタイム暗号化</strong>：入力と同時に暗号化を実行</li>
-            <li><strong>アニメーション</strong>：文字配置過程を視覚的に表示</li>
+            <li><strong data-i18n="ui.164">平文入力</strong><span data-i18n="ui.165">：暗号化したい文字を入力</span></li>
+            <li><strong data-i18n="ui.166">サンプルボタン</strong><span data-i18n="ui.167">：学習用のサンプル文章を読み込み</span></li>
+            <li><strong data-i18n="ui.168">レール数</strong><span data-i18n="ui.169">：2〜6レールから選択</span></li>
+            <li><strong data-i18n="ui.170">方式選択</strong><span data-i18n="ui.171">：順次配置またはジグザグ配置</span></li>
+            <li><strong data-i18n="ui.18">リアルタイム暗号化</strong><span data-i18n="ui.172">：入力と同時に暗号化を実行</span></li>
+            <li><strong data-i18n="ui.112">アニメーション</strong><span data-i18n="ui.173">：文字配置過程を視覚的に表示</span></li>
           </ul>
           
-          <h4>復号タブ</h4>
+          <h4 data-i18n="ui.108">復号タブ</h4>
           <ul>
-            <li><strong>設定同期ボタン</strong>：暗号化タブの設定と暗号文を自動取得</li>
-            <li><strong>暗号文入力</strong>：復号したい暗号文を入力</li>
-            <li><strong>リアルタイム復号</strong>：入力と同時に復号を実行</li>
-            <li><strong>視覚的復号過程</strong>：レール配置から平文復元まで表示</li>
+            <li><strong data-i18n="ui.174">設定同期ボタン</strong><span data-i18n="ui.175">：暗号化タブの設定と暗号文を自動取得</span></li>
+            <li><strong data-i18n="ui.176">暗号文入力</strong><span data-i18n="ui.177">：復号したい暗号文を入力</span></li>
+            <li><strong data-i18n="ui.29">リアルタイム復号</strong><span data-i18n="ui.178">：入力と同時に復号を実行</span></li>
+            <li><strong data-i18n="ui.179">視覚的復号過程</strong><span data-i18n="ui.180">：レール配置から平文復元まで表示</span></li>
           </ul>
           
-          <h4>実験室タブ</h4>
+          <h4 data-i18n="ui.110">実験室タブ</h4>
           <ul>
-            <li><strong>総当たり解読</strong>：様々な設定で復号を試行し、可読性スコアで評価</li>
-            <li><strong>統計実験</strong>：異なる設定での暗号化効果を比較分析</li>
+            <li><strong data-i18n="ui.181">総当たり解読</strong><span data-i18n="ui.182">：様々な設定で復号を試行し、可読性スコアで評価</span></li>
+            <li><strong data-i18n="ui.183">統計実験</strong><span data-i18n="ui.184">：異なる設定での暗号化効果を比較分析</span></li>
           </ul>
         </div>
 
         <div class="help-section">
-          <h3>🎯 機能詳細</h3>
-          <h4>文字数制限</h4>
+          <h3 data-i18n="ui.185">🎯 機能詳細</h3>
+          <h4 data-i18n="ui.186">文字数制限</h4>
           <ul>
-            <li><strong>ソフト制限</strong>：100文字で警告表示</li>
-            <li><strong>ハード制限</strong>：500文字で入力停止</li>
-            <li><strong>警告表示</strong>：空白、記号、改行の存在を通知</li>
+            <li><strong data-i18n="ui.187">ソフト制限</strong><span data-i18n="ui.188">：100文字で警告表示</span></li>
+            <li><strong data-i18n="ui.189">ハード制限</strong><span data-i18n="ui.190">：500文字で入力停止</span></li>
+            <li><strong data-i18n="ui.191">警告表示</strong><span data-i18n="ui.192">：空白、記号、改行の存在を通知</span></li>
           </ul>
           
-          <h4>アニメーション機能</h4>
+          <h4 data-i18n="ui.193">アニメーション機能</h4>
           <ul>
-            <li><strong>速度調整</strong>：100ms〜2000msで調整可能</li>
-            <li><strong>再生/一時停止</strong>：途中での停止・再開が可能</li>
-            <li><strong>リセット</strong>：初期状態に戻して再実行可能</li>
+            <li><strong data-i18n="ui.194">速度調整</strong><span data-i18n="ui.195">：100ms〜2000msで調整可能</span></li>
+            <li><strong data-i18n="ui.196">再生/一時停止</strong><span data-i18n="ui.197">：途中での停止・再開が可能</span></li>
+            <li><strong data-i18n="ui.198">リセット</strong><span data-i18n="ui.199">：初期状態に戻して再実行可能</span></li>
           </ul>
           
-          <h4>エクスポート機能</h4>
+          <h4 data-i18n="ui.200">エクスポート機能</h4>
           <ul>
-            <li><strong>画像保存</strong>：レール配置をPNG形式で保存</li>
-            <li><strong>テキスト保存</strong>：設定と結果をテキストファイルで保存</li>
-            <li><strong>印刷</strong>：レール配置を印刷用レイアウトで出力</li>
+            <li><strong data-i18n="ui.201">画像保存</strong><span data-i18n="ui.202">：レール配置をPNG形式で保存</span></li>
+            <li><strong data-i18n="ui.203">テキスト保存</strong><span data-i18n="ui.204">：設定と結果をテキストファイルで保存</span></li>
+            <li><strong data-i18n="ui.205">印刷</strong><span data-i18n="ui.206">：レール配置を印刷用レイアウトで出力</span></li>
           </ul>
         </div>
 
         <div class="help-section">
-          <h3>📖 学習の進め方</h3>
+          <h3 data-i18n="ui.207">📖 学習の進め方</h3>
           <ol>
-            <li><strong>座学タブ</strong>で基礎知識を学習</li>
-            <li><strong>暗号化タブ</strong>でサンプルを使って操作体験</li>
-            <li><strong>アニメーション</strong>で文字配置過程を観察</li>
-            <li><strong>復号タブ</strong>で逆向きの処理を理解</li>
-            <li><strong>実験室タブ</strong>で総当たり攻撃を体験</li>
-            <li>自分なりの文章で様々な設定を試行</li>
+            <li><strong data-i18n="ui.208">座学タブ</strong><span data-i18n="ui.209">で基礎知識を学習</span></li>
+            <li><strong data-i18n="ui.106">暗号化タブ</strong><span data-i18n="ui.210">でサンプルを使って操作体験</span></li>
+            <li><strong data-i18n="ui.112">アニメーション</strong><span data-i18n="ui.211">で文字配置過程を観察</span></li>
+            <li><strong data-i18n="ui.108">復号タブ</strong><span data-i18n="ui.212">で逆向きの処理を理解</span></li>
+            <li><strong data-i18n="ui.110">実験室タブ</strong><span data-i18n="ui.213">で総当たり攻撃を体験</span></li>
+            <li data-i18n="ui.214">自分なりの文章で様々な設定を試行</li>
           </ol>
         </div>
 
         <div class="help-section">
-          <h3>⚠️ 注意事項</h3>
+          <h3 data-i18n="ui.215">⚠️ 注意事項</h3>
           <ul>
-            <li>このツールは教育目的であり、実際のセキュリティには使用できません</li>
-            <li>レールフェンス暗号は現代では脆弱な暗号方式です</li>
-            <li>ブラウザーのローカルストレージを使用していません（データは保存されません）</li>
-            <li>インターネット接続は不要です（オフラインで動作）</li>
+            <li data-i18n="ui.216">このツールは教育目的であり、実際のセキュリティには使用できません</li>
+            <li data-i18n="ui.217">レールフェンス暗号は現代では脆弱な暗号方式です</li>
+            <li data-i18n="ui.218">ブラウザーのローカルストレージを使用していません（データは保存されません）</li>
+            <li data-i18n="ui.219">インターネット接続は不要です（オフラインで動作）</li>
           </ul>
         </div>
 
         <div class="help-section">
-          <h3>🔗 技術情報</h3>
+          <h3 data-i18n="ui.220">🔗 技術情報</h3>
           <ul>
-            <li><strong>対応ブラウザー</strong>：モダンブラウザー（Chrome, Firefox, Safari, Edge）</li>
-            <li><strong>技術スタック</strong>：HTML5, CSS3, Vanilla JavaScript</li>
-            <li><strong>ライセンス</strong>：MIT License</li>
-            <li><strong>ソースコード</strong>：<a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank">GitHub</a></li>
+            <li><strong data-i18n="ui.221">対応ブラウザー</strong><span data-i18n="ui.222">：モダンブラウザー（Chrome, Firefox, Safari, Edge）</span></li>
+            <li><strong data-i18n="ui.223">技術スタック</strong><span data-i18n="ui.224">：HTML5, CSS3, Vanilla JavaScript</span></li>
+            <li><strong data-i18n="ui.225">ライセンス</strong><span data-i18n="ui.226">：MIT License</span></li>
+            <li><strong data-i18n="ui.227">ソースコード</strong><span data-i18n="ui.228">：</span><a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank" rel="noopener noreferrer">GitHub</a></li>
           </ul>
         </div>
       </div>
@@ -487,10 +497,12 @@
 
   <footer>
     <div class="footer">
-      🔗 GitHubリポジトリはこちら（ <a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank">ipusiron/railfence-cipherlab</a> ）
+      <span data-i18n="ui.229">🔗 GitHubリポジトリはこちら（</span> <a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank" rel="noopener noreferrer">ipusiron/railfence-cipherlab</a> <span data-i18n="ui.230">）</span>
     </div>
   </footer>
 
+  <script src="js/railfence-core.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/common.js"></script>
   <script src="js/encrypt.js"></script>
   <script src="js/decrypt.js"></script>

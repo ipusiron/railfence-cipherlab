@@ -30,10 +30,10 @@ function initializeEncryptTab() {
     // 文字数制限チェック
     if (!canContinue) {
       // 制限を超えた場合、最後の文字を削除
-      e.target.value = e.target.value.slice(0, CHARACTER_LIMITS.HARD_LIMIT);
+      e.target.value = Array.from(e.target.value).slice(0, CHARACTER_LIMITS.HARD_LIMIT).join("");
       updateWarning(e.target.value);
       updateEncryptButton(e.target.value);
-      showToast(e.target, "文字数制限に達しました", "error");
+      showToast(e.target, i18n.t('message.13'), "error");
     }
     
     // リアルタイム暗号化
@@ -62,7 +62,7 @@ function initializeEncryptTab() {
       performRealtimeEncryption();
     } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
       // リアルタイムモードでない場合も、既に暗号化結果が表示されていれば更新
-      if (document.getElementById("cipherResult").innerHTML.trim() !== "") {
+      if (document.getElementById("cipherResult").textContent.trim() !== "") {
         encrypt();
       }
     }
@@ -73,7 +73,7 @@ function initializeEncryptTab() {
       performRealtimeEncryption();
     } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
       // リアルタイムモードでない場合も、既に暗号化結果が表示されていれば更新
-      if (document.getElementById("cipherResult").innerHTML.trim() !== "") {
+      if (document.getElementById("cipherResult").textContent.trim() !== "") {
         encrypt();
       }
     }
@@ -84,12 +84,12 @@ function initializeEncryptTab() {
     const plaintext = document.getElementById("plaintext").value;
     
     if (e.target.checked) {
-      encryptBtn.textContent = "暗号化を更新";
+      encryptBtn.textContent = i18n.t('message.14');
       if (plaintext.trim().length > 0) {
         performRealtimeEncryption();
       }
     } else {
-      encryptBtn.textContent = "暗号化する";
+      encryptBtn.textContent = i18n.t('message.15');
     }
     
     // ボタンの有効/無効状態を更新
@@ -117,7 +117,7 @@ function initializeEncryptTab() {
           clearInterval(animationState.intervalId);
           animationState.isPlaying = false;
           const playBtn = document.getElementById("playBtn");
-          playBtn.textContent = "▶ 再生";
+          playBtn.textContent = i18n.t('message.16');
           playBtn.disabled = true;  // アニメーション完了時は無効化
         }
       }, speed);
@@ -146,180 +146,76 @@ function performRealtimeEncryption() {
 
 function clearEncryptionDisplay() {
   document.getElementById("cleanedText").textContent = "";
-  document.getElementById("railDisplay").innerHTML = "";
-  document.getElementById("intermediateText").innerHTML = "";
-  document.getElementById("cipherResult").innerHTML = "";
+  document.getElementById("railDisplay").replaceChildren();
+  document.getElementById("intermediateText").replaceChildren();
+  document.getElementById("cipherResult").replaceChildren();
   document.getElementById("animationControls").classList.add("hidden");
   document.getElementById("exportControls").classList.add("hidden");
 }
 
 function encryptWithoutAnimation() {
-  const text = document.getElementById("plaintext").value;
-  const removeSpace = document.getElementById("removeSpace").checked;
-  const removeSymbol = document.getElementById("removeSymbol").checked;
-  const cleaned = cleanText(text, removeSpace, removeSymbol);
-  const railCount = parseInt(document.getElementById("railCount").value);
-  const method = document.getElementById("method").value;
-  document.getElementById("cleanedText").textContent = cleaned;
-
-  if (cleaned.length === 0) {
-    clearEncryptionDisplay();
-    return;
-  }
-
-  let railMatrix = Array.from({ length: railCount }, () => 
-    Array(cleaned.length).fill(null)
-  );
-  let index = 0;
-  let direction = 1;
-
-  for (let i = 0; i < cleaned.length; i++) {
-    railMatrix[index][i] = cleaned[i];
-    if (method === "zigzag") {
-      if (index === 0) direction = 1;
-      else if (index === railCount - 1) direction = -1;
-      index += direction;
-    } else {
-      index = (index + 1) % railCount;
-    }
-  }
-
-  displayRailGrid(railMatrix, railCount, cleaned.length, false);
-
-  const result = railMatrix.flat().filter(c => c !== null).join("");
-
-  // 中間状態2：レールから読み取った順序を表示（XSS対策済み）
-  let intermediateDisplay = [];
-  for (let r = 0; r < railCount; r++) {
-    const railChars = railMatrix[r].filter(c => c !== null);
-    if (railChars.length > 0) {
-      const escapedChars = escapeHtml(railChars.join(""));
-      intermediateDisplay.push(`Rail${r+1}: <strong>${escapedChars}</strong>`);
-    }
-  }
-  document.getElementById("intermediateText").innerHTML = intermediateDisplay.join(" → ");
-
-  // 暗号化結果を安全に表示（XSS対策済み）
-  const resultContainer = createResultContainer("暗号文", result);
-  const cipherResultDiv = document.getElementById("cipherResult");
-  cipherResultDiv.innerHTML = '';
-  cipherResultDiv.appendChild(resultContainer);
-  
-  // エクスポートコントロールを表示
-  document.getElementById("exportControls").classList.remove("hidden");
+  renderEncryption(false);
 }
 
 function encrypt() {
-  const realtimeMode = document.getElementById("realtimeMode").checked;
-  
-  if (realtimeMode) {
-    // リアルタイムモードの場合は単純に暗号化を実行
-    encryptWithoutAnimation();
-    return;
-  }
-  
+  renderEncryption(!document.getElementById("realtimeMode").checked);
+}
+
+function renderEncryption(animate) {
+  animate = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  clearInterval(animationState.intervalId);
   const text = document.getElementById("plaintext").value;
-  const removeSpace = document.getElementById("removeSpace").checked;
-  const removeSymbol = document.getElementById("removeSymbol").checked;
-  const cleaned = cleanText(text, removeSpace, removeSymbol);
-  const railCount = parseInt(document.getElementById("railCount").value);
+  const cleaned = cleanText(text, document.getElementById("removeSpace").checked,
+    document.getElementById("removeSymbol").checked);
+  const railCount = Number(document.getElementById("railCount").value);
   const method = document.getElementById("method").value;
   document.getElementById("cleanedText").textContent = cleaned;
-
-  if (cleaned.length === 0) {
+  if (!cleaned.length) {
     clearEncryptionDisplay();
     return;
   }
-
-  let railMatrix = Array.from({ length: railCount }, () => 
-    Array(cleaned.length).fill(null)
-  );
-  let sequence = [];
-  let index = 0;
-  let direction = 1;
-
-  for (let i = 0; i < cleaned.length; i++) {
-    railMatrix[index][i] = cleaned[i];
-    sequence.push({ rail: index, col: i, char: cleaned[i] });
-    if (method === "zigzag") {
-      if (index === 0) direction = 1;
-      else if (index === railCount - 1) direction = -1;
-      index += direction;
-    } else {
-      index = (index + 1) % railCount;
-    }
-  }
-
+  const chars = Array.from(cleaned);
+  const pattern = RailfenceCore.pattern(chars.length, railCount, method);
+  const railMatrix = Array.from({ length: railCount }, () => Array(chars.length).fill(null));
+  const sequence = chars.map((char, col) => {
+    const rail = pattern[col];
+    railMatrix[rail][col] = char;
+    return { rail, col, char };
+  });
   animationState = {
-    isPlaying: false,
-    currentStep: 0,
-    intervalId: null,
-    railMatrix: railMatrix,
-    sequence: sequence,
-    cleaned: cleaned,
-    railCount: railCount
+    isPlaying: false, currentStep: 0, intervalId: null,
+    railMatrix, sequence, cleaned, railCount
   };
-
-  document.getElementById("animationControls").classList.remove("hidden");
-  displayRailGrid(railMatrix, railCount, cleaned.length, true);
-
-  const result = railMatrix.flat().filter(c => c !== null).join("");
-
-  // 中間状態2：レールから読み取った順序を表示（XSS対策済み）
-  let intermediateDisplay = [];
-  for (let r = 0; r < railCount; r++) {
-    const railChars = railMatrix[r].filter(c => c !== null);
-    if (railChars.length > 0) {
-      const escapedChars = escapeHtml(railChars.join(""));
-      intermediateDisplay.push(`Rail${r+1}: <strong>${escapedChars}</strong>`);
-    }
-  }
-  document.getElementById("intermediateText").innerHTML = intermediateDisplay.join(" → ");
-
-  // 暗号化結果を安全に表示（XSS対策済み）
-  const resultContainer = createResultContainer("暗号文", result);
-  const cipherResultDiv = document.getElementById("cipherResult");
-  cipherResultDiv.innerHTML = '';
-  cipherResultDiv.appendChild(resultContainer);
-  
-  // エクスポートコントロールを表示
+  document.getElementById("animationControls").classList.toggle("hidden", !animate);
+  const play = document.getElementById("playBtn");
+  play.disabled = false;
+  play.textContent = i18n.t('message.16');
+  displayRailGrid(railMatrix, railCount, chars.length, animate);
+  renderIntermediate("intermediateText", railMatrix);
+  const result = RailfenceCore.encrypt(cleaned, railCount, method);
+  document.getElementById("cipherResult").replaceChildren(createResultContainer(i18n.t('message.17'), result));
   document.getElementById("exportControls").classList.remove("hidden");
 }
 
 function displayRailGrid(matrix, railCount, textLength, hideAll = false) {
-  let html = '<div class="rail-grid">';
-  
-  for (let r = 0; r < railCount; r++) {
-    html += `<div class="rail-row" data-rail="${r}">`;
-    html += `<div class="rail-label">Rail ${r + 1}</div>`;
-    
-    for (let c = 0; c < textLength; c++) {
-      const char = matrix[r][c];
-      const cellId = `cell-${r}-${c}`;
-      if (char !== null) {
-        const hiddenClass = hideAll ? 'hidden-cell' : '';
-        html += `<div class="rail-cell filled ${hiddenClass}" id="${cellId}">${char}</div>`;
-      } else {
-        html += `<div class="rail-cell empty" id="${cellId}"></div>`;
-      }
-    }
-    html += '</div>';
-  }
-  
-  html += '</div>';
-  document.getElementById("railDisplay").innerHTML = html;
+  renderRailGrid("railDisplay", "cell", matrix, hideAll);
 }
 
 function toggleAnimation() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    displayRailGrid(animationState.railMatrix, animationState.railCount, animationState.sequence.length, false);
+    animationState.currentStep = animationState.sequence.length;
+    return;
+  }
   const playBtn = document.getElementById("playBtn");
   
   if (animationState.isPlaying) {
     animationState.isPlaying = false;
     clearInterval(animationState.intervalId);
-    playBtn.textContent = "▶ 再生";
+    playBtn.textContent = i18n.t('message.16');
   } else {
     animationState.isPlaying = true;
-    playBtn.textContent = "⏸ 一時停止";
+    playBtn.textContent = i18n.t('message.18');
     
     const speed = parseInt(document.getElementById("animationSpeed").value);
     
@@ -335,7 +231,7 @@ function toggleAnimation() {
       } else {
         clearInterval(animationState.intervalId);
         animationState.isPlaying = false;
-        playBtn.textContent = "▶ 再生";
+        playBtn.textContent = i18n.t('message.16');
         playBtn.disabled = true;  // アニメーション完了時は無効化
       }
     }, speed);
@@ -350,11 +246,11 @@ function resetAnimation() {
   animationState.isPlaying = false;
   animationState.currentStep = 0;
   const playBtn = document.getElementById("playBtn");
-  playBtn.textContent = "▶ 再生";
+  playBtn.textContent = i18n.t('message.16');
   playBtn.disabled = false;  // リセット時は有効化
   
   if (animationState.railMatrix) {
-    displayRailGrid(animationState.railMatrix, animationState.railCount, animationState.cleaned.length, true);
+    displayRailGrid(animationState.railMatrix, animationState.railCount, Array.from(animationState.cleaned).length, true);
   }
 }
 
@@ -366,7 +262,7 @@ function loadSample(sampleNumber) {
   if (sampleText) {
     // 文字数制限チェック
     if (sampleText.length > CHARACTER_LIMITS.HARD_LIMIT) {
-      showToast(document.querySelector('.sample-btn'), "サンプルテキストが文字数制限を超えています", "error");
+      showToast(document.querySelector('.sample-btn'), i18n.t('message.19'), "error");
       return;
     }
     
@@ -396,29 +292,11 @@ function clearText() {
 
 // エクスポート機能
 function exportAsImage() {
-  const railGrid = document.querySelector('.rail-grid');
-  if (!railGrid) {
-    showToast(document.querySelector('#exportControls button'), "エクスポートするレール配置がありません", "error");
+  if (!document.querySelector('#railDisplay .rail-grid')) {
+    showToast(document.querySelector('#exportControls button'), i18n.t('message.20'), "error");
     return;
   }
-
-  // html2canvasライブラリが利用できない場合の代替処理
-  if (typeof html2canvas === 'undefined') {
-    // Canvas APIを使った簡易的な画像生成
-    exportRailAsCanvas();
-  } else {
-    // html2canvasを使った高品質な画像生成
-    html2canvas(railGrid, {
-      backgroundColor: '#ffffff',
-      scale: 2
-    }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = 'railfence-cipher.png';
-      link.href = canvas.toDataURL();
-      link.click();
-      showToast(document.querySelector('#exportControls button'), "画像をダウンロードしました", "success");
-    });
-  }
+  exportRailAsCanvas();
 }
 
 function exportRailAsCanvas() {
@@ -473,26 +351,26 @@ function exportRailAsCanvas() {
   link.download = 'railfence-cipher.png';
   link.href = canvas.toDataURL();
   link.click();
-  showToast(document.querySelector('#exportControls button'), "画像をダウンロードしました", "success");
+  showToast(document.querySelector('#exportControls button'), i18n.t('message.21'), "success");
 }
 
 function exportAsText() {
   const railGrid = document.querySelector('.rail-grid');
   if (!railGrid) {
-    showToast(document.querySelector('#exportControls button:nth-child(2)'), "エクスポートするレール配置がありません", "error");
+    showToast(document.querySelector('#exportControls button:nth-child(2)'), i18n.t('message.20'), "error");
     return;
   }
 
-  let textOutput = "レールフェンス暗号 - レール配置\n";
+  let textOutput = i18n.t('message.22');
   textOutput += "========================================\n\n";
 
   const plaintext = document.getElementById("plaintext").value;
   const railCount = document.getElementById("railCount").value;
   const method = document.getElementById("method").value;
 
-  textOutput += `平文: ${plaintext}\n`;
-  textOutput += `レール数: ${railCount}\n`;
-  textOutput += `方式: ${method === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}\n\n`;
+  textOutput += i18n.t('message.23', [plaintext]);
+  textOutput += i18n.t('message.24', [railCount]);
+  textOutput += i18n.t('message.27', [method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26')]);
   
   const rows = railGrid.querySelectorAll('.rail-row');
   rows.forEach(row => {
@@ -523,53 +401,22 @@ function exportAsText() {
   link.download = 'railfence-cipher.txt';
   link.href = URL.createObjectURL(blob);
   link.click();
-  showToast(document.querySelector('#exportControls button:nth-child(2)'), "テキストファイルをダウンロードしました", "success");
+  showToast(document.querySelector('#exportControls button:nth-child(2)'), i18n.t('message.28'), "success");
 }
 
 function printRailGrid() {
-  const railGrid = document.querySelector('.rail-grid');
-  if (!railGrid) {
-    showToast(document.querySelector('#exportControls button:nth-child(3)'), "印刷するレール配置がありません", "error");
+  const grid = document.querySelector('#railDisplay .rail-grid');
+  const button = document.querySelector('#exportControls button:nth-child(3)');
+  if (!grid) {
+    showToast(button, i18n.t('message.29'), "error");
     return;
   }
-
-  // 印刷用ウィンドウを開く
-  const printWindow = window.open('', '_blank');
-  
-  const printContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>レールフェンス暗号 - レール配置</title>
-      <style>
-        body { font-family: monospace; margin: 20px; }
-        .rail-grid { border: 2px solid #000; }
-        .rail-row { display: table-row; }
-        .rail-label { display: table-cell; padding: 8px; font-weight: bold; border: 1px solid #000; }
-        .rail-cell { display: table-cell; width: 40px; height: 40px; text-align: center; vertical-align: middle; border: 1px solid #000; }
-        .rail-cell.filled { background: #f0f0f0; font-weight: bold; }
-        h1 { text-align: center; }
-        .info { margin-bottom: 20px; }
-      </style>
-    </head>
-    <body>
-      <h1>レールフェンス暗号 - レール配置</h1>
-      <div class="info">
-        <p>平文: ${escapeHtml(document.getElementById("plaintext").value)}</p>
-        <p>レール数: ${escapeHtml(document.getElementById("railCount").value)}</p>
-        <p>方式: ${document.getElementById("method").value === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}</p>
-      </div>
-      ${railGrid.outerHTML}
-      <div style="margin-top: 20px;">
-        <p>${escapeHtml(document.getElementById("intermediateText").textContent.replace(/<[^>]*>/g, ''))}</p>
-        <p>${escapeHtml(document.querySelector("#cipherResult span").textContent)}</p>
-      </div>
-    </body>
-    </html>
-  `;
-  
-  printWindow.document.write(printContent);
-  printWindow.document.close();
-  printWindow.print();
-  showToast(document.querySelector('#exportControls button:nth-child(3)'), "印刷ダイアログを開きました", "success");
+  printGridDocument(grid, i18n.t('message.30'), [
+    i18n.t('message.23', [document.getElementById("plaintext").value]),
+    i18n.t('message.24', [document.getElementById("railCount").value]),
+    i18n.t('message.27', [i18n.t(document.getElementById("method").value === 'zigzag' ? 'message.25' : 'message.26')])
+  ], button, [
+    document.getElementById("intermediateText").textContent,
+    document.querySelector("#cipherResult span").textContent
+  ]);
 }
