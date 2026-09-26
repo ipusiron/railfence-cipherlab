@@ -18,6 +18,8 @@ test('paired dictionaries have identical keys, nonempty values and matching plac
 });
 
 test('every literal translation reference exists', () => {
+  const css = fs.readFileSync(path.join(root, 'style.css'), 'utf8');
+  for (const m of css.matchAll(/content:\s*["']([^"']*)["']/g)) assert.equal(jp.test(m[1]), false);
   for (const file of fs.readdirSync(path.join(root, 'js'))) {
     const source = fs.readFileSync(path.join(root, 'js', file), 'utf8');
     for (const m of source.matchAll(/i18n\.t\(['"]([^'"]+)['"]/g)) assert.ok(m[1] in i18n.ja, m[1]);

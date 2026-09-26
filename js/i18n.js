@@ -1,6 +1,9 @@
 // All user-facing text is kept in paired dictionaries.
 const i18n = (() => {
   const ja = {
+    "label.cleaned": "処理後のテキスト:",
+    "label.intermediate": "レールから読み取った順序:",
+    "label.decryption": "復号過程 - レール配置:",
     "message.0": "文字数制限に達しました ({0}/{1})",
     "message.1": "文字数制限に近づいています ({0}/{1})",
     "message.2": "文字数が多いです ({0}/{1})",
@@ -300,6 +303,9 @@ const i18n = (() => {
     "title": "RailFence CipherLab - レールフェンス暗号学習ツール",
   };
   const en = {
+    "label.cleaned": "Processed text:",
+    "label.intermediate": "Reading order by rail:",
+    "label.decryption": "Decryption - Rail layout:",
     "message.0": "Character limit reached ({0}/{1})",
     "message.1": "Approaching the character limit ({0}/{1})",
     "message.2": "Long text ({0}/{1})",
@@ -625,6 +631,10 @@ const i18n = (() => {
   function apply() {
     document.documentElement.lang = language;
     document.title = t('title');
+    for (const [id, key] of [
+      ['cleanedText', 'label.cleaned'], ['intermediateText', 'label.intermediate'],
+      ['decryptIntermediateText', 'label.decryption']
+    ]) document.getElementById(id).setAttribute('data-label', t(key));
     document.querySelectorAll('[data-i18n]').forEach(node => {
       node.textContent = t(node.dataset.i18n);
     });
