@@ -35,6 +35,14 @@ Its four tabs—Encrypt, Decrypt, Study, and Lab—cover everything from the bas
 >
 > *English Study tab: Method 1 and Method 2 examples for `HELLO` with three rails.*
 
+> ![Japanese Lab with expanded key search](assets/screenshot3.png)
+>
+> *Japanese Lab tab: the `Meet me at the old bridge at midnight` ciphertext, all offset and direction variants, and the highest-ranked bigram candidates.*
+
+> ![Japanese movement mapping](assets/screenshot4.png)
+>
+> *Japanese Encrypt tab: `HELLOWORLD`, three zigzag rails, start position 1, with plaintext-to-ciphertext mapping and movement statistics.*
+
 ---
 
 ## 🎯 Intended audience
@@ -392,6 +400,8 @@ railfence-cipherlab/            # Project root
 │   │   └── screenshot.png      # Study tab: both method examples
 │   ├── screenshot.png          # Encrypt tab: zigzag, three rails
 │   └── screenshot2.png         # Decrypt tab: restored Sample 2
+│   ├── screenshot3.png         # Lab tab: extended-key brute-force results
+│   └── screenshot4.png         # Encrypt tab: character-position mapping
 ├── js/                         # Scripts
 │   ├── common.js               # Tabs, warnings, clipboard, toasts, and help
 │   ├── decrypt.js              # Decrypt tab UI

@@ -51,6 +51,11 @@ No external API, CDN, font, dependency, or input transmission is allowed.
 **Cipher Implementation**: Put all cipher operations only in `js/railfence-core.js`.
 Keep its reference functions DOM-independent and export `RailfenceCore` plus conditional CommonJS `module.exports`.
 UI code calls `encrypt`, `decrypt`, `pattern`, and `cleanText`; do not duplicate rail-placement algorithms.
+Extended-key UI code calls `normalizeKey`, `keyPattern`, `encryptKey`, and `decryptKey`.
+An extended key contains rails, method, start offset, and direction; offset is normalized within the method period.
+Use `permutation` and `movement` for character-position diagrams and statistics, never `indexOf` on repeated characters.
+The Lab ranks English candidates with the immutable `railfence-bigrams.js` table through `bigramScore` and `bruteForce`.
+`transpositionCheck` is a teaching aid: it reports short input, likely transposition, or likely substitution from English chi-square.
 Two methods are supported:
 - `sequential` (方式1): Simple round-robin distribution across rails (equivalent to columnar transposition)
 - `zigzag` (方式2): Bounce pattern between first and last rail
