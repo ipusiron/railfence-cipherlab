@@ -140,6 +140,8 @@ function clearEncryptionDisplay() {
   document.getElementById("railDisplay").replaceChildren();
   document.getElementById("intermediateText").replaceChildren();
   document.getElementById("cipherResult").replaceChildren();
+  document.getElementById("movementDiagram").replaceChildren();
+  document.getElementById("movementStats").replaceChildren();
   document.getElementById("animationControls").classList.add("hidden");
   document.getElementById("exportControls").classList.add("hidden");
 }
@@ -185,7 +187,45 @@ function renderEncryption(animate) {
   renderIntermediate("intermediateText", railMatrix);
   const result = RailfenceCore.encryptKey(cleaned, key);
   document.getElementById("cipherResult").replaceChildren(createResultContainer(i18n.t('message.17'), result));
+  renderMovementDiagram(chars, result, key);
   document.getElementById("exportControls").classList.remove("hidden");
+}
+
+function renderMovementDiagram(chars, ciphertext, key) {
+  const target = document.getElementById('movementDiagram');
+  const stats = document.getElementById('movementStats');
+  target.replaceChildren();
+  stats.replaceChildren();
+  const length = chars.length;
+  if (length > 60) {
+    target.textContent = i18n.t('message.72', [length]);
+  } else {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${Math.max(240, length * 28)} 100`);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', i18n.t('message.73'));
+    const mapping = RailfenceCore.permutation(length, key);
+    for (let index = 0; index < length; index++) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', String(index * 28 + 14));
+      line.setAttribute('y1', '28');
+      line.setAttribute('x2', String(mapping[index] * 28 + 14));
+      line.setAttribute('y2', '72');
+      line.setAttribute('class', 'movement-line');
+      svg.append(line);
+    }
+    for (const [text, y] of [[chars, 22], [Array.from(ciphertext), 88]]) text.forEach((char, index) => {
+      const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      node.setAttribute('x', String(index * 28 + 14));
+      node.setAttribute('y', String(y));
+      node.setAttribute('text-anchor', 'middle');
+      node.textContent = char;
+      svg.append(node);
+    });
+    target.append(svg);
+  }
+  const movement = RailfenceCore.movement(length, key);
+  stats.textContent = i18n.t('message.74', [movement.average, movement.max]);
 }
 
 function getEncryptKey() {
