@@ -409,6 +409,7 @@ npm test
 | ファイル | 検査内容 |
 |---|---|
 | `test/core.test.js` | 既知解答14行・サンプル2件・前処理8件・往復410条件 |
+| `test/core2.test.js` | 拡張鍵・移動・総当たり・頻度表・転置判定の既知解答 |
 | `test/format.test.js` | JS・CSS・テスト160文字、HTML250文字の最長行と行数の下限 |
 | `test/html.test.js` | CSP・ARIA・禁止する書き方・中核の呼び出し・サンプル |
 | `test/i18n.test.js` | 日英キー・プレースホルダー・参照キー・日本語の直書き・言語の優先順位 |
@@ -437,10 +438,12 @@ railfence-cipherlab/            # プロジェクトのルート
 │   ├── encrypt.js              # 暗号化タブの画面
 │   ├── i18n.js                 # 日英の辞書と言語の切り替え
 │   ├── lab.js                  # 実験室タブの画面
+│   ├── railfence-bigrams.js    # 英語の2文字組の頻度表（生成物）
 │   └── railfence-core.js       # 暗号の処理（DOMを使わない）
 ├── test/                       # 自動テスト（node --test）
 │   ├── contrast.test.js        # 配色のコントラスト比
 │   ├── core.test.js            # 暗号の処理の既知解答と往復
+│   ├── core2.test.js           # 拡張鍵・移動・採点・転置判定の既知解答
 │   ├── format.test.js          # 最長行と行数の下限
 │   ├── html.test.js            # CSP・ARIA・禁止する書き方
 │   ├── i18n.test.js            # 日英の辞書のキーと日本語の直書き

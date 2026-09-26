@@ -369,6 +369,7 @@ npm test
 | File | Checks |
 |---|---|
 | `test/core.test.js` | 14 known-answer rows, two samples, eight preprocessing cases, and 410 round trips |
+| `test/core2.test.js` | Extended keys, movement, brute force, the frequency table, and transposition checks |
 | `test/format.test.js` | Maximum lines of 160 characters for JS/CSS/tests and 250 for HTML, plus minimum file lengths |
 | `test/html.test.js` | CSP, ARIA, prohibited constructs, core calls, and samples |
 | `test/i18n.test.js` | Matching keys, placeholders, references, Japanese literals, and language priority |
@@ -397,10 +398,12 @@ railfence-cipherlab/            # Project root
 │   ├── encrypt.js              # Encrypt tab UI
 │   ├── i18n.js                 # Japanese/English dictionaries and switching
 │   ├── lab.js                  # Lab tab UI
+│   ├── railfence-bigrams.js    # Generated English bigram frequency table
 │   └── railfence-core.js       # DOM-independent cipher operations
 ├── test/                       # Automated tests using node --test
 │   ├── contrast.test.js        # Color contrast ratios
 │   ├── core.test.js            # Cipher known answers and round trips
+│   ├── core2.test.js           # Extended key, movement, scoring, and transposition checks
 │   ├── format.test.js          # Maximum line and minimum file lengths
 │   ├── html.test.js            # CSP, ARIA, and prohibited constructs
 │   ├── i18n.test.js            # Dictionary keys and Japanese literals
