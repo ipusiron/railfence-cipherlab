@@ -1298,7 +1298,7 @@ button:hover:not(:disabled),
   display: block;
   min-width: 240px;
   width: 100%;
-  color: var(--text-color);
+  color: #333;
 }
 
 .movement-diagram text {
@@ -1306,10 +1306,14 @@ button:hover:not(:disabled),
 }
 
 .movement-line {
-  stroke: var(--primary-color);
+  stroke: var(--primary);
   stroke-width: 1.5;
 }
 
 #movementStats {
   margin: 0.5rem 0;
+}
+
+.rail-label {
+  white-space: nowrap;
 }
