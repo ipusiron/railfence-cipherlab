@@ -1,3 +1,5 @@
+[English](README.en.md) · 日本語
+
 <!--
 ---
 id: day034
@@ -39,6 +41,7 @@ hub: true
 ![GitHub forks](https://img.shields.io/github/forks/ipusiron/railfence-cipherlab?style=social)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ipusiron/railfence-cipherlab)
 ![GitHub license](https://img.shields.io/github/license/ipusiron/railfence-cipherlab)
+[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-blue?logo=github)](https://ipusiron.github.io/railfence-cipherlab/)
 
 **Day034 - 生成AIで作るセキュリティツール100**
 
@@ -57,7 +60,15 @@ hub: true
 
 > ![方式2（ジグザグ）で暗号化](assets/screenshot.png)
 >
-> *方式2（ジグザグ）で暗号化*
+> *サンプル1を3レール・方式2（ジグザグ）で暗号化。図と暗号文`Hoo!el,wrdl l`を表示。*
+
+> ![サンプル2の復号結果](assets/screenshot2.png)
+>
+> *サンプル2を3レール・方式1で復号。元の日本語の平文とレール配置を表示。*
+
+> ![英語の座学タブ](assets/en/screenshot.png)
+>
+> *英語の座学タブ。`HELLO`を3レールで処理する方式1・方式2の例。*
 
 ---
 
@@ -67,7 +78,7 @@ hub: true
 
 | タイプ | 説明 |
 |--------|------|
-| 🔰 初学者 | 暗号の基本概念を体験的に学びたい人。とくに転置式暗号（転置暗号）の入門教材として有効です。 |
+| 🔰 初学者 | 暗号の基本概念を体験的に学びたい人。特に転置式暗号（転置暗号）の入門教材として有効 |
 | 👩‍🏫 教育者・講師 | セキュリティや情報リテラシーの授業で暗号の可視化教材を探している教育関係者。授業内実演にも適しています。 |
 | 🧑‍🎓 CTF参加者 | 転置式暗号の仕組みを理解し、解読演習の基礎訓練を行いたい人。総当たりアプローチの実践学習にも最適です。 |
 | 🛠️ セキュリティ愛好家 | 古典暗号の構造や脆弱性に興味を持つホビイスト・ハッカー層。自作解読ツール開発の参考にもなります。 |
@@ -110,12 +121,22 @@ hub: true
 2. **読み取り**：各レールから順番に文字を読み取り
 3. **暗号文生成**：読み取った順序で文字を連結して暗号文を作成
 
-**例**：「HELLO」を3レールで暗号化
+**方式1（順次）**で`HELLO`を3レールに配置します。
+
 ```
-H . . L . O    →  HLO
-. E . . L .    →  EL
-. . L . . .    →  L
+H . . L .    →  HL
+. E . . O    →  EO
+. . L . .    →  L
 結果：HLEOL
+```
+
+**方式2（ジグザグ）**では次の配置になります。
+
+```
+H . . . O    →  HO
+. E . L .    →  EL
+. . L . .    →  L
+結果：HOELL
 ```
 
 ### 🔍 使用例と用途
@@ -152,13 +173,13 @@ H . . L . O    →  HLO
 | **縦列転置暗号** | 転置の基本原理が同一 | レール概念の有無 |
 | **単純置換暗号** | 古典暗号、手計算可能 | 転置 vs 置換（換字）の違い |
 | **カエサル暗号** | 教育用入門暗号 | シフト vs 転置 |
-| **ヴィジュネル暗号** | 多表式暗号の概念 | 多項式 vs 幾何学的 |
+| **ヴィジュネル暗号** | 多表式暗号の概念 | 多表式vs幾何学的 |
 
 ### 🛡️ セキュリティ強度
 
 #### 強度の要因
 - **レール数**：多いほど複雑（一般的に2〜6レール）
-- **文字長**：長いほど解読困難
+- **文字長**：鍵（レール数と方式）の数は文の長さでは増えない。長い文ほど、総当たりの候補から正しい文を見分けやすい
 - **方式選択**：ジグザグ方式がやや複雑
 - **言語特性**：日本語は英語より解読困難
 
@@ -280,27 +301,8 @@ H . . L . O    →  HLO
 - **統計実験**：
   - 異なる設定での暗号化効果を比較分析
   - 文字の移動距離とエントロピー変化を数値化
-  - 最適な暗号化設定の自動判定
-
----
-
-## 📂 ディレクトリー構成
-
-```
-railfence-cipherlab/
-├── index.html                 # メインHTMLファイル
-├── style.css                  # スタイルシート
-├── js/                        # JavaScript モジュール
-│   ├── common.js              # 共通機能（タブ切り替え、Toast等）
-│   ├── encrypt.js             # 暗号化タブの機能
-│   ├── decrypt.js             # 復号タブの機能
-│   └── lab.js                 # 実験室タブの機能
-├── assets/                    # 静的ファイル
-│   └── screenshot.png         # スクリーンショット
-├── LICENSE                    # MITライセンス
-├── .gitignore                 # Git除外設定
-└── README.md                  # このファイル
-```
+  - 移動距離が大きい設定を表示（安全さの指標ではない）
+  - 転置では文字の出現回数が変わらないため、エントロピー変化は常に0
 
 ---
 
@@ -327,7 +329,7 @@ railfence-cipherlab/
 
 - **教育目的専用**：実際のセキュリティ用途には使用できません
 - **暗号強度**：レールフェンス暗号は現代では脆弱な暗号方式です
-- **データ保存**：ブラウザーのローカルストレージは使用しません
+- **データ保存**：localStorageに保存するのは言語の設定だけ。入力と結果は保存しない
 - **オフライン動作**：インターネット接続不要で動作します
 - **ブラウザー対応**：モダンブラウザー（Chrome, Firefox, Safari, Edge）推奨
 
@@ -357,9 +359,107 @@ railfence-cipherlab/
 
 - **文字数制限**：500文字（教育用途に最適化）
 - **アニメーション**：60fps対応、速度調整可能
-- **レスポンシブ**：800px幅を基準とした設計
+- **レスポンシブ**：幅320pxから操作可能。レールの図だけを入れ物の中で横スクロール
 
 ---
+
+## 🔬 仕様と既知解答
+
+暗号化・復号・実験室は、DOMを使わない共通の`js/railfence-core.js`で計算します。
+方式1（`sequential`）は1→2→3→1…の順に配置し、方式2（`zigzag`）は端のレールで折り返します。
+`pattern`は各文字が入るレールを0始まりの配列で返します。たとえば`HELLO`・3レールでは方式1が`01201`、方式2が`01210`です。
+
+前処理では改行を除きます。「空白を除いて処理する」と「記号を除いて処理する」は独立した設定で、記号の除去では空白を消しません。
+たとえば`a b,c`に記号の除去だけを適用すると`a bc`になります。
+文字はUnicodeコードポイント単位で扱い、`AB😀CD`の絵文字は1文字として配置します。結合文字やZWJで構成された見た目の1文字は、複数のコードポイントに分かれる場合があります。
+
+| 平文 | レール数 | 方式 | 暗号文 |
+|---|---|---|---|
+| `HELLO` | 3 | sequential | `HLEOL` |
+| `HELLO` | 3 | zigzag | `HOELL` |
+| `Hello, world!` | 3 | sequential | `Hl r!eowll,od` |
+| `Hello, world!` | 3 | zigzag | `Hoo!el,wrdl l` |
+| `WEAREDISCOVEREDRUNATONCE` | 3 | zigzag | `WECRUOERDSOEERNTNEAIVDAC` |
+
+最後の行は英語版Wikipedia「[Rail fence cipher](https://en.wikipedia.org/wiki/Rail_fence_cipher)」の例です。
+記事ではレールごとの区切りを空白で示し、`WECRUO ERDSOEERNTNE AIVDAC`と表記しています。
+
+以前の復号タブのサンプル暗号文2件は元の平文に戻りませんでした。現在は除去なし・3レール・方式1の暗号文へ訂正し、暗号化タブのサンプルと往復することを検査しています。
+
+ヘッダーのボタンで日本語と英語を切り替えられます。
+言語は`?lang=ja|en`、保存値、ブラウザーの言語の順で決まり、切り替え時もタブ・入力・設定・結果・アニメーション位置を保持します。
+
+## 🔒 このツールのセキュリティ
+
+入力はブラウザー内で処理し、外部へ送信しません。外部API・CDN・フォント・依存ライブラリーは使いません。
+CSPはスクリプトとスタイルを同一オリジンに限定し、インラインハンドラー・style属性・HTML文字列による描画を使いません。
+localStorageの`railfence-language`に保存するのは言語だけで、保存を遮断しても動作します。
+
+クリップボードへの書き込みとファイルの保存・印刷はボタン操作時だけ行います。
+古典暗号の学習用であり、実データの機密保護には使用できません。
+
+## 🧪 テスト
+
+Node.js 22で次を実行します。依存のインストールは不要です。
+
+```sh
+npm test
+```
+
+| ファイル | 検査内容 |
+|---|---|
+| `test/core.test.js` | 既知解答14行・サンプル2件・前処理8件・往復410条件 |
+| `test/format.test.js` | JS・CSS・テスト160文字、HTML250文字の最長行と行数の下限 |
+| `test/html.test.js` | CSP・ARIA・禁止する書き方・中核の呼び出し・サンプル |
+| `test/i18n.test.js` | 日英キー・プレースホルダー・参照キー・日本語の直書き・言語の優先順位 |
+| `test/contrast.test.js` | CSS変数の配色9組が4.5:1以上 |
+| `test/readme.test.js` | 日英READMEの既知解答・見出し・ツリー・画像・YAML |
+
+GitHub Actionsはpushとpull_requestの両方で`npm test`を実行します。
+
+## 📁 ディレクトリー構造
+
+```text
+railfence-cipherlab/            # プロジェクトのルート
+├── .claude/                    # Claude Codeの設定
+│   └── CLAUDE.md               # Claude Code向けの説明（英語）
+├── .github/                    # GitHubの設定
+│   └── workflows/              # GitHub Actionsのワークフロー
+│       └── test.yml            # push と pull_requestで npm testを実行する
+├── assets/                     # 画像
+│   ├── en/                     # 英語の画面のスクリーンショット
+│   │   └── screenshot.png      # 英語の座学タブ（方式1・方式2の例）
+│   ├── screenshot.png          # 暗号化タブ（ジグザグ・3レール）
+│   └── screenshot2.png         # 復号タブ（サンプル2を復号）
+├── js/                         # スクリプト
+│   ├── common.js               # タブ・警告・コピー・トースト・ヘルプ
+│   ├── decrypt.js              # 復号タブの画面
+│   ├── encrypt.js              # 暗号化タブの画面
+│   ├── i18n.js                 # 日英の辞書と言語の切り替え
+│   ├── lab.js                  # 実験室タブの画面
+│   └── railfence-core.js       # 暗号の処理（DOMを使わない）
+├── test/                       # 自動テスト（node --test）
+│   ├── contrast.test.js        # 配色のコントラスト比
+│   ├── core.test.js            # 暗号の処理の既知解答と往復
+│   ├── format.test.js          # 最長行と行数の下限
+│   ├── html.test.js            # CSP・ARIA・禁止する書き方
+│   ├── i18n.test.js            # 日英の辞書のキーと日本語の直書き
+│   └── readme.test.js          # READMEの既知解答・構成・画像
+├── .gitignore                  # Gitの管理から外すファイル
+├── .nojekyll                   # GitHub Pagesで Jekyllを使わない
+├── LICENSE                     # MIT ライセンス
+├── README.en.md                # 英語の説明
+├── README.md                   # 日本語の説明
+├── index.html                  # 4タブの画面
+├── package.json                # npm testの設定（依存なし）
+└── style.css                   # スタイル
+```
+
+## 💻 動作環境
+
+Chrome・Edge・Firefox・Safariなどのモダンブラウザー向けです。classic scriptを使い、`index.html`を直接開くfile://でも、ローカルHTTPでも動作します。
+HTTP・file://の実測はChromiumで実施しています。クリップボードの利用可否はブラウザーの権限に依存し、印刷はポップアップの許可が必要な場合があります。
+スマートフォン向けにタブと操作欄を折り返し、チェック枠は20px、ラベルを含む操作範囲は44px以上にしています。
 
 ## 📄 ライセンス
 
@@ -367,7 +467,7 @@ MIT License - 詳細は [LICENSE](LICENSE) をご覧ください。
 
 ---
 
-## 🛠 このツールについて
+## 🛠️ このツールについて
 
 本ツールは、「生成AIで作るセキュリティツール100」プロジェクトの一環として開発されました。 このプロジェクトでは、AIの支援を活用しながら、セキュリティに関連するさまざまなツールを100日間にわたり制作・公開していく取り組みを行っています。
 
