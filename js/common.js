@@ -279,3 +279,23 @@ function printGridDocument(grid, heading, details, button) {
   doc.body.append(copy);
   showToast(button, i18n.t('message.12'), "success");
 }
+
+// Redraw labels only: input, rails, results and animation position stay untouched.
+document.addEventListener('languagechange', () => {
+  updateWarning(document.getElementById('plaintext').value);
+  updateDecryptWarning(document.getElementById('ciphertext').value);
+  for (const [prefix, state, result, label, realtime, update, action] of [
+    ['', animationState, 'cipherResult', 'message.17', 'realtimeMode', 'message.14', 'message.15'],
+    ['decrypt', decryptAnimationState, 'plainResult', 'message.33', 'decryptRealtimeMode', 'message.31', 'message.32']
+  ]) {
+    const target = document.getElementById(result);
+    const copy = target.querySelector('button');
+    if (copy) target.replaceChildren(createResultContainer(i18n.t(label), copy.dataset.copyText));
+    document.getElementById(prefix ? 'decryptPlayBtn' : 'playBtn').textContent =
+      i18n.t(state.isPlaying ? 'message.18' : 'message.16');
+    document.getElementById(prefix ? 'decryptBtn' : 'encryptBtn').textContent =
+      i18n.t(document.getElementById(realtime).checked ? update : action);
+  }
+  if (lastBruteForceResults) displayBruteForceResults(lastBruteForceResults);
+  if (lastStatisticsResults) displayStatisticsResults(lastStatisticsResults);
+});

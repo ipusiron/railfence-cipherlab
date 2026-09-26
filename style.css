@@ -1252,7 +1252,7 @@ button:hover:not(:disabled),
     grid-column: 2;
   }
 
-  .help-button {
+  .header-buttons {
     grid-column: 3;
     justify-self: end;
   }
@@ -1264,6 +1264,18 @@ button:hover:not(:disabled),
   .tab-button {
     padding-inline: 2rem;
   }
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.header-buttons button {
+  margin: 0;
+  padding-inline: 0.75rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

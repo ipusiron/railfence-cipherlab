@@ -14,7 +14,7 @@ test('CSP and referrer restrict resources without inline exceptions', () => {
   }
   assert.doesNotMatch(html, /unsafe-inline|frame-ancestors|\sstyle\s*=|\son\w+\s*=/i);
   assert.match(html, /name="referrer" content="no-referrer"/);
-  assert.match(html, /<noscript>/);
+  assert.match(html, /<noscript\b[^>]*>/);
 });
 
 test('tabs, modal, labels, button types, external links, and length bounds', () => {

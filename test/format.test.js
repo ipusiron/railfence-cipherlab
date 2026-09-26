@@ -19,7 +19,8 @@ const minimums = {
   'js/railfence-core.js': 40,
   'js/encrypt.js': 250,
   'js/decrypt.js': 250,
-  'js/lab.js': 200
+  'js/lab.js': 200,
+  'js/i18n.js': 250
 };
 for (const [file, minimum] of Object.entries(minimums)) {
   test(`source retained: ${file}`, () => {

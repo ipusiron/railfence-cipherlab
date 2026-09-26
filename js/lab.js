@@ -1,4 +1,6 @@
 // lab.js - 実験室タブの機能
+let lastBruteForceResults = null;
+let lastStatisticsResults = null;
 
 // DOM読み込み後に初期化
 document.addEventListener('DOMContentLoaded', function() {
@@ -51,6 +53,7 @@ function performBruteForce() {
           
           results.push({
             railCount,
+            methodCode: method,
             method: methodName,
             result: decrypted,
             score: calculateReadabilityScore(decrypted)
@@ -113,6 +116,10 @@ function calculateReadabilityScore(text) {
 
 // 総当たり結果の表示
 function displayBruteForceResults(results) {
+  lastBruteForceResults = results;
+  results.forEach(result => {
+    result.method = i18n.t(result.methodCode === 'zigzag' ? 'message.25' : 'message.26');
+  });
   const target = document.getElementById("bruteForceResults");
   target.replaceChildren();
   if (!results.length) {
@@ -158,6 +165,7 @@ function performStatistics() {
         
         statistics.push({
           railCount,
+          methodCode: method,
           method: methodName,
           original: plaintext,
           encrypted: encrypted,
@@ -230,6 +238,10 @@ function calculateEntropy(frequency) {
 
 // 統計結果の表示
 function displayStatisticsResults(statistics) {
+  lastStatisticsResults = statistics;
+  statistics.forEach(stat => {
+    stat.method = i18n.t(stat.methodCode === 'zigzag' ? 'message.25' : 'message.26');
+  });
   const target = document.getElementById("statisticsResults");
   target.replaceChildren(uiNode("h4", "", i18n.t('message.51')));
   const grid = uiNode("div", "lab-stats-grid");
