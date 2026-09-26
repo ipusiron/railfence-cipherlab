@@ -68,3 +68,14 @@ test('printing retains translated input, rails, method, intermediate text, and r
     assert.ok(printing.includes(result));
   }
 });
+
+test('extended Lab controls and safe frequency link are present', () => {
+  for (const id of ['labMethods', 'labWithOffsets', 'transpositionCheck', 'transpositionResult']) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  const lab = read('js/lab.js');
+  assert.match(lab, /RailfenceCore\.bruteForce/);
+  assert.match(lab, /RailfenceCore\.transpositionCheck/);
+  assert.match(lab, /rel = 'noopener noreferrer'/);
+  assert.doesNotMatch(lab, /calculateReadabilityScore|indexOf\(char\)/);
+});

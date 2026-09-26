@@ -161,6 +161,10 @@
     <div id="decryptDisplay"></div>
     <div class="readonly-box" id="decryptIntermediateText"></div>
     <div id="plainResult" aria-live="polite"></div>
+    <label class="transposition-control">
+      <input type="checkbox" id="transpositionCheck"> <span data-i18n="ui.239">転置式かを確認</span>
+    </label>
+    <div id="transpositionResult" aria-live="polite"></div>
     
     <div id="decryptExportControls" class="export-controls hidden">
       <button type="button" data-action="exportDecryptAsImage" data-i18n="ui.24">📷 画像で保存</button>
@@ -385,8 +389,15 @@
             <option value="4-6" data-i18n="ui.146">4-6レール</option>
           </select>
         </label>
+        <label><span data-i18n="ui.236">方式:</span>
+          <select id="labMethods">
+            <option value="both" data-i18n="ui.237">両方式</option>
+            <option value="sequential" data-i18n="ui.16">方式1（順次）</option>
+            <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
+          </select>
+        </label>
         <label>
-          <input type="checkbox" id="labBothMethods" checked> <span data-i18n="ui.147">両方式を試行</span>
+          <input type="checkbox" id="labWithOffsets"> <span data-i18n="ui.238">開始位置と方向も試行</span>
         </label>
       </div>
       

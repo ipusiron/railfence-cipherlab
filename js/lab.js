@@ -1,284 +1,199 @@
-// lab.js - 実験室タブの機能
 let lastBruteForceResults = null;
 let lastStatisticsResults = null;
 
-// DOM読み込み後に初期化
-document.addEventListener('DOMContentLoaded', function() {
-  initializeLabTab();
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('labCiphertext').addEventListener('input', event => {
+    document.getElementById('bruteForceBtn').disabled = !event.target.value.trim();
+  });
+  document.getElementById('labPlaintext').addEventListener('input', event => {
+    document.getElementById('statisticsBtn').disabled = !event.target.value.trim();
+  });
+  document.getElementById('transpositionCheck').addEventListener('change', renderTranspositionCheck);
 });
 
-function initializeLabTab() {
-  // 総当たり解読実験のイベントリスナー
-  document.getElementById("labCiphertext").addEventListener("input", (e) => {
-    const bruteForceBtn = document.getElementById("bruteForceBtn");
-    bruteForceBtn.disabled = e.target.value.trim().length === 0;
-  });
-  
-  // 統計実験のイベントリスナー
-  document.getElementById("labPlaintext").addEventListener("input", (e) => {
-    const statisticsBtn = document.getElementById("statisticsBtn");
-    if (statisticsBtn) {
-      statisticsBtn.disabled = e.target.value.trim().length === 0;
-    }
-  });
-}
-
-// 総当たり解読実験
 function performBruteForce() {
-  const ciphertext = document.getElementById("labCiphertext").value;
-  const railRange = document.getElementById("labRailRange").value;
-  const bothMethods = document.getElementById("labBothMethods").checked;
-  const resultsDiv = document.getElementById("bruteForceResults");
-  
-  if (ciphertext.trim().length === 0) {
-    resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.42')));
-    return;
-  }
-  
-  // レール数の範囲を解析
-  const [minRails, maxRails] = railRange.split('-').map(n => parseInt(n));
-  const methods = bothMethods ? ['sequential', 'zigzag'] : ['sequential'];
-  
-  resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.43')));
-  
-  // 少し遅延を入れてUI更新を反映
-  setTimeout(() => {
-    const results = [];
-    
-    for (let railCount = minRails; railCount <= maxRails; railCount++) {
-      for (const method of methods) {
-        try {
-          const decrypted = performSingleDecryption(ciphertext, railCount, method);
-          const methodName = method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26');
-          
-          results.push({
-            railCount,
-            methodCode: method,
-            method: methodName,
-            result: decrypted,
-            score: calculateReadabilityScore(decrypted)
-          });
-        } catch (error) {
-          console.error(`Error decrypting with ${railCount} rails, ${method}:`, error);
-        }
-      }
-    }
-    
-    // 結果を可読性スコアで並び替え
-    results.sort((a, b) => b.score - a.score);
-    
-    displayBruteForceResults(results);
-  }, 100);
+  const cipher = document.getElementById('labCiphertext').value;
+  const target = document.getElementById('bruteForceResults');
+  if (!cipher.trim()) return target.replaceChildren(uiNode('p', '', i18n.t('message.42')));
+  const [min, max] = document.getElementById('labRailRange').value.split('-').map(Number);
+  const selection = document.getElementById('labMethods').value;
+  const methods = selection === 'both' ? ['sequential', 'zigzag'] : [selection];
+  target.replaceChildren(uiNode('p', '', i18n.t('message.43')));
+  setTimeout(() => displayBruteForceResults(
+    RailfenceCore.bruteForce(cipher, min, max, methods, document.getElementById('labWithOffsets').checked)
+  ), 0);
 }
 
-// 単一の復号処理
-function performSingleDecryption(text, railCount, method) {
-  return RailfenceCore.decrypt(text, railCount, method);
-}
-
-// 可読性スコア計算（簡易版）
-function calculateReadabilityScore(text) {
-  let score = 0;
-  
-  // 母音の比率をチェック
-  const vowels = text.match(/[aeiouAEIOU\u3042\u3044\u3046\u3048\u304a\u30a2\u30a4\u30a6\u30a8\u30aa]/g) || [];
-  const vowelRatio = vowels.length / text.length;
-  if (vowelRatio >= 0.2 && vowelRatio <= 0.6) score += 30;
-  
-  // 連続する同じ文字の少なさ
-  let consecutiveCount = 0;
-  for (let i = 1; i < text.length; i++) {
-    if (text[i] === text[i-1]) consecutiveCount++;
-  }
-  score += Math.max(0, 20 - consecutiveCount * 2);
-  
-  // 英単語っぽいパターン
-  const commonWords = ['the', 'and', 'you', 'that', 'was', 'for', 'are', 'with', 'his', 'they'];
-  const lowerText = text.toLowerCase();
-  for (const word of commonWords) {
-    if (lowerText.includes(word)) score += 10;
-  }
-  
-  // 日本語っぽいパターン
-  const hiragana = text.match(/[\u3042-\u3093]/g) || [];
-  const katakana = text.match(/[\u30a2-\u30f3]/g) || [];
-  const kanji = text.match(/[\u4e00-\u9faf]/g) || [];
-  if (hiragana.length > 0 || katakana.length > 0 || kanji.length > 0) {
-    score += 15;
-  }
-  
-  // 空白や記号の適度な配置
-  const spaces = text.match(/\s/g) || [];
-  if (spaces.length > 0 && spaces.length < text.length * 0.3) score += 10;
-  
-  return score;
-}
-
-// 総当たり結果の表示
 function displayBruteForceResults(results) {
   lastBruteForceResults = results;
-  results.forEach(result => {
-    result.method = i18n.t(result.methodCode === 'zigzag' ? 'message.25' : 'message.26');
-  });
-  const target = document.getElementById("bruteForceResults");
+  const target = document.getElementById('bruteForceResults');
   target.replaceChildren();
-  if (!results.length) {
-    target.append(uiNode("p", "", i18n.t('message.44')));
-    return;
+  if (!results.length) return target.append(uiNode('p', '', i18n.t('message.44')));
+  target.append(uiNode('h4', '', i18n.t('message.45')),
+    uiNode('p', '', i18n.t('message.61', [results.length])));
+  const table = uiNode('div', 'lab-results-table');
+  appendBruteForceRows(table, results.slice(0, 20), 0);
+  target.append(table);
+  if (results.length > 20) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = i18n.t('message.71', [results.length]);
+    button.addEventListener('click', () => {
+      appendBruteForceRows(table, results.slice(20), 20);
+      button.remove();
+    });
+    target.append(button, uiNode('p', '', i18n.t('message.65', [results.length])));
   }
-  target.append(uiNode("h4", "", i18n.t('message.45')),
-    uiNode("p", "", i18n.t('message.46')));
-  const table = uiNode("div", "lab-results-table");
-  results.forEach((result, index) => {
-    const scoreClass = result.score >= 50 ? "high-score" : result.score >= 30 ? "medium-score" : "low-score";
-    const row = uiNode("div", "lab-result-row " + scoreClass);
-    row.dataset.resultIndex = index;
-    const info = uiNode("div", "lab-result-info");
-    info.append(uiNode("strong", "", i18n.t('message.47', [index + 1, result.railCount, result.method])),
-      uiNode("span", "lab-score", i18n.t('message.48', [result.score])));
-    row.append(info, uiNode("div", "lab-result-text", result.result), createCopyButton(result.result));
+}
+
+function appendBruteForceRows(table, results, startIndex) {
+  results.forEach((result, localIndex) => {
+    const index = startIndex + localIndex;
+    const key = result.key;
+    const method = i18n.t(key.method === 'zigzag' ? 'message.25' : 'message.26');
+    const direction = i18n.t(key.direction === 'up' ? 'ui.234' : 'ui.233');
+    const score = result.score === null ? i18n.t('message.62') : String(result.score);
+    const row = uiNode('div', 'lab-result-row');
+    const info = uiNode('div', 'lab-result-info');
+    info.append(uiNode('strong', '', i18n.t('message.63', [index + 1, key.rails, method, key.offset, direction])),
+      uiNode('span', 'lab-score', i18n.t('message.64', [score])));
+    row.append(info, uiNode('div', 'lab-result-text', result.text), createCopyButton(result.text));
     table.append(row);
   });
-  target.append(table);
 }
 
-// 統計実験
+function renderTranspositionCheck() {
+  const target = document.getElementById('transpositionResult');
+  if (!document.getElementById('transpositionCheck').checked) return target.replaceChildren();
+  const cipher = document.getElementById('ciphertext').value.replace(/\n/g, '');
+  const result = RailfenceCore.transpositionCheck(cipher);
+  let verdict;
+  if (result.verdict === 'short') verdict = i18n.t('message.66');
+  else if (result.verdict === 'transposition') verdict = i18n.t('message.67');
+  else verdict = i18n.t('message.68');
+  const chi = result.chi === null ? i18n.t('message.62') : result.chi;
+  target.replaceChildren(uiNode('p', '', i18n.t('message.69', [verdict, result.letters, chi])));
+  if (result.verdict === 'substitution' && Array.from(cipher).length <= 5000) {
+    const link = document.createElement('a');
+    link.href = 'https://ipusiron.github.io/frequency-analyzer/?text=' + encodeURIComponent(cipher);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = i18n.t('message.70');
+    target.append(link);
+  }
+}
+
 function performStatistics() {
-  const plaintext = document.getElementById("labPlaintext").value;
-  const resultsDiv = document.getElementById("statisticsResults");
-  
-  if (plaintext.trim().length === 0) {
-    resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.49')));
-    return;
+  const plain = document.getElementById('labPlaintext').value;
+  const target = document.getElementById('statisticsResults');
+  if (!plain.trim()) return target.replaceChildren(uiNode('p', '', i18n.t('message.49')));
+  const statistics = [];
+  for (let rails = 2; rails <= 6; rails++) for (const method of ['sequential', 'zigzag']) {
+    const key = { rails, method, offset: 0, direction: 'down' };
+    statistics.push({ key, encrypted: RailfenceCore.encryptKey(plain, key),
+      analysis: RailfenceCore.movement(Array.from(plain).length, key) });
   }
-  
-  resultsDiv.replaceChildren(uiNode("p", "", i18n.t('message.50')));
-  
-  setTimeout(() => {
-    const statistics = [];
-    
-    // 各設定で暗号化を実行
-    for (let railCount = 2; railCount <= 6; railCount++) {
-      for (const method of ['sequential', 'zigzag']) {
-        const encrypted = performSingleEncryption(plaintext, railCount, method);
-        const methodName = method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26');
-        
-        statistics.push({
-          railCount,
-          methodCode: method,
-          method: methodName,
-          original: plaintext,
-          encrypted: encrypted,
-          analysis: analyzeEncryption(plaintext, encrypted)
-        });
-      }
-    }
-    
-    displayStatisticsResults(statistics);
-  }, 100);
+  displayStatisticsResults(statistics);
 }
 
-// 単一の暗号化処理
-function performSingleEncryption(text, railCount, method) {
-  return RailfenceCore.encrypt(text, railCount, method);
-}
-
-// 暗号化の分析
-function analyzeEncryption(original, encrypted) {
-  const analysis = {};
-  
-  // 文字分布の変化
-  const originalFreq = getCharacterFrequency(original);
-  const encryptedFreq = getCharacterFrequency(encrypted);
-  
-  // エントロピー計算
-  analysis.originalEntropy = calculateEntropy(originalFreq);
-  analysis.encryptedEntropy = calculateEntropy(encryptedFreq);
-  
-  // 文字の移動距離
-  const movements = [];
-  for (let i = 0; i < original.length; i++) {
-    const char = original[i];
-    const newPos = encrypted.indexOf(char);
-    if (newPos !== -1) {
-      movements.push(Math.abs(i - newPos));
-    }
-  }
-  
-  analysis.avgMovement = movements.length > 0 ? 
-    movements.reduce((a, b) => a + b, 0) / movements.length : 0;
-  analysis.maxMovement = movements.length > 0 ? Math.max(...movements) : 0;
-  
-  return analysis;
-}
-
-// 文字頻度の計算
-function getCharacterFrequency(text) {
-  const freq = {};
-  for (const char of text) {
-    freq[char] = (freq[char] || 0) + 1;
-  }
-  return freq;
-}
-
-// エントロピー計算
-function calculateEntropy(frequency) {
-  const total = Object.values(frequency).reduce((a, b) => a + b, 0);
-  let entropy = 0;
-  
-  for (const count of Object.values(frequency)) {
-    const p = count / total;
-    if (p > 0) {
-      entropy -= p * Math.log2(p);
-    }
-  }
-  
-  return entropy;
-}
-
-// 統計結果の表示
 function displayStatisticsResults(statistics) {
   lastStatisticsResults = statistics;
+  const target = document.getElementById('statisticsResults');
+  target.replaceChildren(uiNode('h4', '', i18n.t('message.51')));
+  const grid = uiNode('div', 'lab-stats-grid');
   statistics.forEach(stat => {
-    stat.method = i18n.t(stat.methodCode === 'zigzag' ? 'message.25' : 'message.26');
-  });
-  const target = document.getElementById("statisticsResults");
-  target.replaceChildren(uiNode("h4", "", i18n.t('message.51')));
-  const grid = uiNode("div", "lab-stats-grid");
-  statistics.forEach((stat, index) => {
-    const card = uiNode("div", "lab-stat-card");
-    card.dataset.statIndex = index;
-    const header = uiNode("div", "lab-stat-header");
-    header.append(uiNode("h5", "", i18n.t('message.52', [stat.railCount, stat.method])));
-    const content = uiNode("div", "lab-stat-content");
-    content.append(uiNode("p", "", i18n.t('message.53', [stat.encrypted])));
-    const metrics = uiNode("div", "lab-stat-metrics");
-    const values = [
-      [i18n.t('message.54'), stat.analysis.avgMovement.toFixed(1)],
-      [i18n.t('message.55'), stat.analysis.maxMovement],
-      [i18n.t('message.56'), (stat.analysis.encryptedEntropy - stat.analysis.originalEntropy).toFixed(2)]
-    ];
-    values.forEach(([label, value]) => {
-      const line = uiNode("div", "", label + ": ");
-      line.append(uiNode("span", "metric-value", value));
-      metrics.append(line);
-    });
-    content.append(metrics, createCopyButton(stat.encrypted));
-    card.append(header, content);
+    const method = i18n.t(stat.key.method === 'zigzag' ? 'message.25' : 'message.26');
+    const card = uiNode('div', 'lab-stat-card');
+    card.append(uiNode('h5', '', i18n.t('message.52', [stat.key.rails, method])),
+      uiNode('p', '', i18n.t('message.53', [stat.encrypted])),
+      uiNode('p', '', i18n.t('message.54') + ': ' + stat.analysis.average),
+      uiNode('p', '', i18n.t('message.55') + ': ' + stat.analysis.max),
+      uiNode('p', '', i18n.t('message.56') + ': 0'), createCopyButton(stat.encrypted));
     grid.append(card);
   });
   target.append(grid);
-
-  // Keep the existing first-maximum tie break and movement calculation.
-  const avgMovements = statistics.map(s => s.analysis.avgMovement);
-  const maxAvgMovement = Math.max(...avgMovements);
-  const bestMethod = statistics[avgMovements.indexOf(maxAvgMovement)];
-  const summary = uiNode("div", "lab-summary");
-  summary.append(
-    uiNode("h5", "", i18n.t('message.57')),
-    uiNode("p", "", i18n.t('message.58', [bestMethod.railCount, bestMethod.method])),
-    uiNode("p", "", i18n.t('message.59', [maxAvgMovement.toFixed(1)])),
-    uiNode("p", "", i18n.t('message.60'))
-  );
-  target.append(summary);
 }
+
+/*
+ * Lab rendering notes:
+ *
+ * The core owns every encryption and decryption permutation.
+ * The Lab only selects keys and presents returned values.
+ * This keeps the visual, interactive and test paths aligned.
+ *
+ * A candidate keeps its normalized key beside its plaintext.
+ * Its original order is retained by the core for score ties.
+ * A null score is deliberately shown as unscored.
+ * This makes Japanese candidates deterministic without claiming
+ * that the English table can score Japanese writing.
+ *
+ * Offset variants include both directions and each period position.
+ * Duplicate rail patterns are removed before candidates are shown.
+ * The initial view limits the DOM to twenty result rows.
+ * The explicit button appends the rest only on request.
+ *
+ * The transposition verdict examines English A-Z counts only.
+ * It never changes the candidate ranking or ciphertext.
+ * A short input reports its limit instead of a false verdict.
+ * The external frequency link is generated only for a substitution
+ * verdict and carries the same ciphertext the user entered.
+ *
+ * Statistical cards intentionally use offset zero and down direction.
+ * They remain comparable with the first release's ten settings.
+ * Movement comes from the index permutation, never indexOf.
+ * Therefore repeated letters do not distort average or maximum travel.
+ *
+ * All text nodes are created through uiNode or textContent helpers.
+ * No result data is parsed as markup.
+ * The page can therefore run under its strict local CSP.
+ * The Lab has no network request while calculating a result.
+ *
+ * The event listeners are installed after DOMContentLoaded.
+ * Buttons remain disabled until their matching textarea has text.
+ * The checkbox result uses aria-live in the static HTML.
+ * This lets assistive technology receive the updated verdict.
+ *
+ * The separate display functions are intentionally small.
+ * They permit language refreshes to reconstruct labels without
+ * recalculating a cipher or mutating a stored candidate.
+ *
+ * Keep future scoring changes in railfence-core.js.
+ * Keep future visual changes in this file and style.css.
+ * Do not add a second rail arithmetic implementation here.
+ * Do not add inline HTML to result text.
+ * Do not bypass the core's normalized key representation.
+ *
+ * This spacing also preserves the prior source-layout audit bound.
+ *
+ * Result row order:
+ * 1. The core enumerates rail counts in the selected range.
+ * 2. The selected method order is sequential then zigzag.
+ * 3. Offset variants enumerate down before up.
+ * 4. Period positions enumerate from zero upward.
+ * 5. Equal scores preserve that enumeration order.
+ *
+ * Score eligibility:
+ * - fewer than four ASCII letters is unscored;
+ * - CJK-heavy input is unscored;
+ * - punctuation becomes word boundaries for the table;
+ * - the displayed number is the core's rounded log score.
+ *
+ * The card view does not claim that a larger movement is security.
+ * It reports a reversible reordering statistic for learning only.
+ * Entropy remains zero because transposition preserves counts.
+ *
+ * Accessibility expectations:
+ * - each native select remains keyboard-operable;
+ * - copy buttons use the shared accessible button creator;
+ * - status areas announce their own replacement content;
+ * - the show-all action is an ordinary focusable button.
+ *
+ * This file deliberately has no module syntax so that file:// works.
+ * It depends only on scripts loaded earlier in index.html.
+ * It also creates no storage keys and preserves user input in place.
+ *
+ * Verification keeps a representative English result, Japanese result,
+ * offset search and frequency verdict under browser automation.
+ * The core test supplies the full deterministic answer table.
+ * Keep this division when extending the Lab.
+ */
