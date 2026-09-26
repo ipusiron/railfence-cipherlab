@@ -4,11 +4,17 @@ let lastStatisticsResults = null;
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('labCiphertext').addEventListener('input', event => {
     document.getElementById('bruteForceBtn').disabled = !event.target.value.trim();
+    renderLabTranspositionCheck();
   });
   document.getElementById('labPlaintext').addEventListener('input', event => {
     document.getElementById('statisticsBtn').disabled = !event.target.value.trim();
   });
   document.getElementById('transpositionCheck').addEventListener('change', renderTranspositionCheck);
+  document.getElementById('ciphertext').addEventListener('input', renderTranspositionCheck);
+  document.addEventListener('languagechange', () => {
+    renderTranspositionCheck();
+    renderLabTranspositionCheck();
+  });
 });
 
 function performBruteForce() {
@@ -65,7 +71,16 @@ function appendBruteForceRows(table, results, startIndex) {
 function renderTranspositionCheck() {
   const target = document.getElementById('transpositionResult');
   if (!document.getElementById('transpositionCheck').checked) return target.replaceChildren();
-  const cipher = document.getElementById('ciphertext').value.replace(/\n/g, '');
+  renderTranspositionResult(document.getElementById('ciphertext').value, target);
+}
+
+function renderLabTranspositionCheck() {
+  renderTranspositionResult(document.getElementById('labCiphertext').value,
+    document.getElementById('labTranspositionResult'));
+}
+
+function renderTranspositionResult(ciphertext, target) {
+  const cipher = ciphertext.replace(/\n/g, '');
   const result = RailfenceCore.transpositionCheck(cipher);
   let verdict;
   if (result.verdict === 'short') verdict = i18n.t('message.66');
