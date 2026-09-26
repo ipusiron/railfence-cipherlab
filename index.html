@@ -64,6 +64,15 @@
           <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
         </select>
       </label>
+      <label><span data-i18n="ui.231">開始位置:</span>
+        <select id="railOffset"></select>
+      </label>
+      <label><span data-i18n="ui.232">方向:</span>
+        <select id="railDirection">
+          <option value="down" data-i18n="ui.233">上から下へ</option>
+          <option value="up" data-i18n="ui.234">下から上へ</option>
+        </select>
+      </label>
     </div>
 
     <label>
@@ -125,6 +134,15 @@
           <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
         </select>
       </label>
+      <label><span data-i18n="ui.231">開始位置:</span>
+        <select id="decryptRailOffset"></select>
+      </label>
+      <label><span data-i18n="ui.232">方向:</span>
+        <select id="decryptRailDirection">
+          <option value="down" data-i18n="ui.233">上から下へ</option>
+          <option value="up" data-i18n="ui.234">下から上へ</option>
+        </select>
+      </label>
     </div>
 
     <label>
@@ -166,6 +184,7 @@
           <li data-i18n="ui.39">読み取った順序で文字を並べて暗号文を作成</li>
         </ol>
       </div>
+      <p data-i18n="ui.235">開始位置は配置パターンを周期内でずらし、方向はレールの上下を反転します。どちらも鍵の一部です。</p>
     </div>
 
     <div class="study-section">

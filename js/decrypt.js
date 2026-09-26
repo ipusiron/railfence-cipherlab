@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeDecryptTab() {
+  refreshDecryptOffsets();
   // 自動同期機能（オプション）
   // タブ切り替え時に自動で設定同期を実行
   document.querySelector('[data-tab="decrypt"]').addEventListener('click', () => {
@@ -47,18 +48,11 @@ function initializeDecryptTab() {
   });
 
   // オプション変更時もリアルタイム更新
-  document.getElementById("decryptRailCount").addEventListener("change", () => {
-    if (document.getElementById("decryptRealtimeMode").checked && document.getElementById("ciphertext").value.trim().length > 0) {
-      performRealtimeDecryption();
-    } else if (!document.getElementById("decryptRealtimeMode").checked && document.getElementById("ciphertext").value.trim().length > 0) {
-      // リアルタイムモードでない場合も、既に復号結果が表示されていれば更新
-      if (document.getElementById("plainResult").textContent.trim() !== "") {
-        decrypt();
-      }
-    }
-  });
-
-  document.getElementById("decryptMethod").addEventListener("change", () => {
+  const keyControlIds = [
+    "decryptRailCount", "decryptMethod", "decryptRailOffset", "decryptRailDirection"
+  ];
+  for (const id of keyControlIds) document.getElementById(id).addEventListener("change", () => {
+    if (id === "decryptRailCount" || id === "decryptMethod") refreshDecryptOffsets();
     if (document.getElementById("decryptRealtimeMode").checked && document.getElementById("ciphertext").value.trim().length > 0) {
       performRealtimeDecryption();
     } else if (!document.getElementById("decryptRealtimeMode").checked && document.getElementById("ciphertext").value.trim().length > 0) {
@@ -140,15 +134,15 @@ function performRealtimeDecryption() {
 
 function decryptWithoutAnimation() {
   const text = document.getElementById("ciphertext").value.replace(/\n/g, "");
-  const railCount = parseInt(document.getElementById("decryptRailCount").value);
-  const method = document.getElementById("decryptMethod").value;
+  const key = getDecryptKey();
+  const railCount = key.rails;
   
   if (text.length === 0) {
     clearDecryptionDisplay();
     return;
   }
   
-  const result = performDecryptionLogic(text, railCount, method);
+  const result = performDecryptionLogic(text, key);
   
   displayDecryptRailGrid(result.railMatrix, railCount, text.length, false);
 
@@ -184,6 +178,9 @@ function loadDecryptSample(sampleNumber) {
     
     document.getElementById("decryptRailCount").value = "3";
     document.getElementById("decryptMethod").value = "sequential";
+    refreshDecryptOffsets();
+    document.getElementById("decryptRailOffset").value = "0";
+    document.getElementById("decryptRailDirection").value = "down";
     ciphertextArea.value = sampleText;
     
     // イベントを手動で発火してリアルタイム更新をトリガー
@@ -196,6 +193,9 @@ function loadDecryptSample(sampleNumber) {
     // サンプルに対応した設定も自動で設定
     document.getElementById("decryptRailCount").value = "3";
     document.getElementById("decryptMethod").value = "sequential";
+    refreshDecryptOffsets();
+    document.getElementById("decryptRailOffset").value = "0";
+    document.getElementById("decryptRailDirection").value = "down";
     
     // 設定変更もリアルタイム更新をトリガー
     if (document.getElementById("decryptRealtimeMode").checked && sampleText.length > 0) {
@@ -228,6 +228,9 @@ function syncFromEncryptTab() {
     // 復号タブに設定を適用
     document.getElementById("decryptRailCount").value = encryptRailCount;
     document.getElementById("decryptMethod").value = encryptMethod;
+    refreshDecryptOffsets();
+    document.getElementById("decryptRailOffset").value = document.getElementById("railOffset").value;
+    document.getElementById("decryptRailDirection").value = document.getElementById("railDirection").value;
     
     // 暗号文がある場合は自動入力
     if (encryptCipherResult) {
@@ -275,9 +278,14 @@ function checkAndSuggestSync() {
   const encryptMethod = document.getElementById("method").value;
   const decryptRailCount = document.getElementById("decryptRailCount").value;
   const decryptMethod = document.getElementById("decryptMethod").value;
+  const encryptOffset = document.getElementById("railOffset").value;
+  const decryptOffset = document.getElementById("decryptRailOffset").value;
+  const encryptDirection = document.getElementById("railDirection").value;
+  const decryptDirection = document.getElementById("decryptRailDirection").value;
   
   // 設定が異なる場合にヒント表示
-  if (encryptRailCount !== decryptRailCount || encryptMethod !== decryptMethod) {
+  if (encryptRailCount !== decryptRailCount || encryptMethod !== decryptMethod ||
+      encryptOffset !== decryptOffset || encryptDirection !== decryptDirection) {
     const syncStatus = document.getElementById("syncStatus");
     syncStatus.textContent = i18n.t('message.38');
     syncStatus.className = "sync-status";
@@ -288,10 +296,35 @@ function checkAndSuggestSync() {
   }
 }
 
-function performDecryptionLogic(text, railCount, method) {
-  const plaintext = RailfenceCore.decrypt(text, railCount, method);
+function getDecryptKey() {
+  return RailfenceCore.normalizeKey({
+    rails: Number(document.getElementById("decryptRailCount").value),
+    method: document.getElementById("decryptMethod").value,
+    offset: Number(document.getElementById("decryptRailOffset").value),
+    direction: document.getElementById("decryptRailDirection").value
+  });
+}
+
+function refreshDecryptOffsets() {
+  const select = document.getElementById("decryptRailOffset");
+  const period = RailfenceCore.periodOf(Number(document.getElementById("decryptRailCount").value),
+    document.getElementById("decryptMethod").value);
+  const prior = Number(select.value);
+  select.replaceChildren();
+  for (let offset = 0; offset < period; offset++) {
+    const option = document.createElement("option");
+    option.value = String(offset);
+    option.textContent = String(offset);
+    select.appendChild(option);
+  }
+  select.value = String(prior < period ? prior : 0);
+}
+
+function performDecryptionLogic(text, key) {
+  const plaintext = RailfenceCore.decryptKey(text, key);
   const chars = Array.from(plaintext);
-  const pattern = RailfenceCore.pattern(chars.length, railCount, method);
+  const pattern = RailfenceCore.keyPattern(chars.length, key);
+  const railCount = key.rails;
   const railMatrix = Array.from({ length: railCount }, () => Array(chars.length).fill(null));
   chars.forEach((char, col) => { railMatrix[pattern[col]][col] = char; });
   return { plaintext, railMatrix, pattern };
@@ -308,15 +341,15 @@ function decrypt() {
   }
   
   const text = document.getElementById("ciphertext").value.replace(/\n/g, "");
-  const railCount = parseInt(document.getElementById("decryptRailCount").value);
-  const method = document.getElementById("decryptMethod").value;
+  const key = getDecryptKey();
+  const railCount = key.rails;
   
   if (text.length === 0) {
     clearDecryptionDisplay();
     return;
   }
 
-  const result = performDecryptionLogic(text, railCount, method);
+  const result = performDecryptionLogic(text, key);
   
   // アニメーション用のシーケンスを作成
   let sequence = [];
@@ -497,10 +530,14 @@ function exportDecryptAsText() {
   const ciphertext = document.getElementById("ciphertext").value;
   const railCount = document.getElementById("decryptRailCount").value;
   const method = document.getElementById("decryptMethod").value;
+  const offset = document.getElementById("decryptRailOffset").value;
+  const direction = document.getElementById("decryptRailDirection").value;
 
   textOutput += i18n.t('message.40', [ciphertext]);
   textOutput += i18n.t('message.24', [railCount]);
   textOutput += i18n.t('message.27', [method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26')]);
+  textOutput += i18n.t('ui.231') + " " + offset + "\n";
+  textOutput += i18n.t('ui.232') + " " + i18n.t(direction === 'up' ? 'ui.234' : 'ui.233') + "\n\n";
   
   const rows = railGrid.querySelectorAll('.rail-row');
   rows.forEach(row => {
@@ -544,7 +581,9 @@ function printDecryptRailGrid() {
   printGridDocument(grid, i18n.t('message.41'), [
     i18n.t('message.40', [document.getElementById("ciphertext").value]),
     i18n.t('message.24', [document.getElementById("decryptRailCount").value]),
-    i18n.t('message.27', [i18n.t(document.getElementById("decryptMethod").value === 'zigzag' ? 'message.25' : 'message.26')])
+    i18n.t('message.27', [i18n.t(document.getElementById("decryptMethod").value === 'zigzag' ? 'message.25' : 'message.26')]),
+    i18n.t('ui.231') + " " + document.getElementById("decryptRailOffset").value,
+    i18n.t('ui.232') + " " + i18n.t(document.getElementById("decryptRailDirection").value === 'up' ? 'ui.234' : 'ui.233')
   ], button, [
     document.getElementById("decryptIntermediateText").textContent,
     document.querySelector("#plainResult span").textContent
