@@ -70,6 +70,14 @@ hub: true
 >
 > *英語の座学タブ。`HELLO`を3レールで処理する方式1・方式2の例。*
 
+> ![拡張鍵を試す実験室](assets/screenshot3.png)
+>
+> *日本語の実験室タブ。開始位置・方向を含めた総当たりと、バイグラム順位の上位候補。*
+
+> ![文字位置の対応図](assets/screenshot4.png)
+>
+> *日本語の暗号化タブ。`HELLOWORLD`、3レール・ジグザグ・開始位置1の対応図と移動量。*
+
 ---
 
 ## 🎯 対象ユーザー（ターゲット）
@@ -409,6 +417,7 @@ npm test
 | ファイル | 検査内容 |
 |---|---|
 | `test/core.test.js` | 既知解答14行・サンプル2件・前処理8件・往復410条件 |
+| `test/core2.test.js` | 拡張鍵・移動・総当たり・頻度表・転置判定の既知解答 |
 | `test/format.test.js` | JS・CSS・テスト160文字、HTML250文字の最長行と行数の下限 |
 | `test/html.test.js` | CSP・ARIA・禁止する書き方・中核の呼び出し・サンプル |
 | `test/i18n.test.js` | 日英キー・プレースホルダー・参照キー・日本語の直書き・言語の優先順位 |
@@ -431,16 +440,20 @@ railfence-cipherlab/            # プロジェクトのルート
 │   │   └── screenshot.png      # 英語の座学タブ（方式1・方式2の例）
 │   ├── screenshot.png          # 暗号化タブ（ジグザグ・3レール）
 │   └── screenshot2.png         # 復号タブ（サンプル2を復号）
+│   ├── screenshot3.png         # 実験室タブ（拡張鍵の総当たり）
+│   └── screenshot4.png         # 暗号化タブ（文字位置の対応図）
 ├── js/                         # スクリプト
 │   ├── common.js               # タブ・警告・コピー・トースト・ヘルプ
 │   ├── decrypt.js              # 復号タブの画面
 │   ├── encrypt.js              # 暗号化タブの画面
 │   ├── i18n.js                 # 日英の辞書と言語の切り替え
 │   ├── lab.js                  # 実験室タブの画面
+│   ├── railfence-bigrams.js    # 英語の2文字組の頻度表（生成物）
 │   └── railfence-core.js       # 暗号の処理（DOMを使わない）
 ├── test/                       # 自動テスト（node --test）
 │   ├── contrast.test.js        # 配色のコントラスト比
 │   ├── core.test.js            # 暗号の処理の既知解答と往復
+│   ├── core2.test.js           # 拡張鍵・移動・採点・転置判定の既知解答
 │   ├── format.test.js          # 最長行と行数の下限
 │   ├── html.test.js            # CSP・ARIA・禁止する書き方
 │   ├── i18n.test.js            # 日英の辞書のキーと日本語の直書き

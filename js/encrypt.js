@@ -22,6 +22,7 @@ const sampleTexts = {
 };
 
 function initializeEncryptTab() {
+  refreshEncryptOffsets();
   // 平文入力のイベントリスナー
   document.getElementById("plaintext").addEventListener("input", (e) => {
     const canContinue = updateWarning(e.target.value);
@@ -57,18 +58,8 @@ function initializeEncryptTab() {
     }
   });
 
-  document.getElementById("railCount").addEventListener("change", () => {
-    if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-      performRealtimeEncryption();
-    } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
-      // リアルタイムモードでない場合も、既に暗号化結果が表示されていれば更新
-      if (document.getElementById("cipherResult").textContent.trim() !== "") {
-        encrypt();
-      }
-    }
-  });
-
-  document.getElementById("method").addEventListener("change", () => {
+  for (const id of ["railCount", "method", "railOffset", "railDirection"]) document.getElementById(id).addEventListener("change", () => {
+    if (id === "railCount" || id === "method") refreshEncryptOffsets();
     if (document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
       performRealtimeEncryption();
     } else if (!document.getElementById("realtimeMode").checked && document.getElementById("plaintext").value.trim().length > 0) {
@@ -149,6 +140,8 @@ function clearEncryptionDisplay() {
   document.getElementById("railDisplay").replaceChildren();
   document.getElementById("intermediateText").replaceChildren();
   document.getElementById("cipherResult").replaceChildren();
+  document.getElementById("movementDiagram").replaceChildren();
+  document.getElementById("movementStats").replaceChildren();
   document.getElementById("animationControls").classList.add("hidden");
   document.getElementById("exportControls").classList.add("hidden");
 }
@@ -167,15 +160,15 @@ function renderEncryption(animate) {
   const text = document.getElementById("plaintext").value;
   const cleaned = cleanText(text, document.getElementById("removeSpace").checked,
     document.getElementById("removeSymbol").checked);
-  const railCount = Number(document.getElementById("railCount").value);
-  const method = document.getElementById("method").value;
+  const key = getEncryptKey();
+  const railCount = key.rails;
   document.getElementById("cleanedText").textContent = cleaned;
   if (!cleaned.length) {
     clearEncryptionDisplay();
     return;
   }
   const chars = Array.from(cleaned);
-  const pattern = RailfenceCore.pattern(chars.length, railCount, method);
+  const pattern = RailfenceCore.keyPattern(chars.length, key);
   const railMatrix = Array.from({ length: railCount }, () => Array(chars.length).fill(null));
   const sequence = chars.map((char, col) => {
     const rail = pattern[col];
@@ -184,7 +177,7 @@ function renderEncryption(animate) {
   });
   animationState = {
     isPlaying: false, currentStep: 0, intervalId: null,
-    railMatrix, sequence, cleaned, railCount
+    railMatrix, sequence, cleaned, railCount, key
   };
   document.getElementById("animationControls").classList.toggle("hidden", !animate);
   const play = document.getElementById("playBtn");
@@ -192,9 +185,71 @@ function renderEncryption(animate) {
   play.textContent = i18n.t('message.16');
   displayRailGrid(railMatrix, railCount, chars.length, animate);
   renderIntermediate("intermediateText", railMatrix);
-  const result = RailfenceCore.encrypt(cleaned, railCount, method);
+  const result = RailfenceCore.encryptKey(cleaned, key);
   document.getElementById("cipherResult").replaceChildren(createResultContainer(i18n.t('message.17'), result));
+  renderMovementDiagram(chars, result, key);
   document.getElementById("exportControls").classList.remove("hidden");
+}
+
+function renderMovementDiagram(chars, ciphertext, key) {
+  const target = document.getElementById('movementDiagram');
+  const stats = document.getElementById('movementStats');
+  target.replaceChildren();
+  stats.replaceChildren();
+  const length = chars.length;
+  if (length > 60) {
+    target.textContent = i18n.t('message.72', [length]);
+  } else {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${Math.max(240, length * 28)} 100`);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', i18n.t('message.73'));
+    const mapping = RailfenceCore.permutation(length, key);
+    for (let index = 0; index < length; index++) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', String(index * 28 + 14));
+      line.setAttribute('y1', '28');
+      line.setAttribute('x2', String(mapping[index] * 28 + 14));
+      line.setAttribute('y2', '72');
+      line.setAttribute('class', 'movement-line');
+      svg.append(line);
+    }
+    for (const [text, y] of [[chars, 22], [Array.from(ciphertext), 88]]) text.forEach((char, index) => {
+      const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      node.setAttribute('x', String(index * 28 + 14));
+      node.setAttribute('y', String(y));
+      node.setAttribute('text-anchor', 'middle');
+      node.textContent = char;
+      svg.append(node);
+    });
+    target.append(svg);
+  }
+  const movement = RailfenceCore.movement(length, key);
+  stats.textContent = i18n.t('message.74', [movement.average, movement.max]);
+}
+
+function getEncryptKey() {
+  return RailfenceCore.normalizeKey({
+    rails: Number(document.getElementById("railCount").value),
+    method: document.getElementById("method").value,
+    offset: Number(document.getElementById("railOffset").value),
+    direction: document.getElementById("railDirection").value
+  });
+}
+
+function refreshEncryptOffsets() {
+  const select = document.getElementById("railOffset");
+  const period = RailfenceCore.periodOf(Number(document.getElementById("railCount").value),
+    document.getElementById("method").value);
+  const prior = Number(select.value);
+  select.replaceChildren();
+  for (let offset = 0; offset < period; offset++) {
+    const option = document.createElement("option");
+    option.value = String(offset);
+    option.textContent = String(offset);
+    select.appendChild(option);
+  }
+  select.value = String(prior < period ? prior : 0);
 }
 
 function displayRailGrid(matrix, railCount, textLength, hideAll = false) {
@@ -367,10 +422,14 @@ function exportAsText() {
   const plaintext = document.getElementById("plaintext").value;
   const railCount = document.getElementById("railCount").value;
   const method = document.getElementById("method").value;
+  const offset = document.getElementById("railOffset").value;
+  const direction = document.getElementById("railDirection").value;
 
   textOutput += i18n.t('message.23', [plaintext]);
   textOutput += i18n.t('message.24', [railCount]);
   textOutput += i18n.t('message.27', [method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26')]);
+  textOutput += i18n.t('ui.231') + " " + offset + "\n";
+  textOutput += i18n.t('ui.232') + " " + i18n.t(direction === 'up' ? 'ui.234' : 'ui.233') + "\n\n";
   
   const rows = railGrid.querySelectorAll('.rail-row');
   rows.forEach(row => {
@@ -414,7 +473,9 @@ function printRailGrid() {
   printGridDocument(grid, i18n.t('message.30'), [
     i18n.t('message.23', [document.getElementById("plaintext").value]),
     i18n.t('message.24', [document.getElementById("railCount").value]),
-    i18n.t('message.27', [i18n.t(document.getElementById("method").value === 'zigzag' ? 'message.25' : 'message.26')])
+    i18n.t('message.27', [i18n.t(document.getElementById("method").value === 'zigzag' ? 'message.25' : 'message.26')]),
+    i18n.t('ui.231') + " " + document.getElementById("railOffset").value,
+    i18n.t('ui.232') + " " + i18n.t(document.getElementById("railDirection").value === 'up' ? 'ui.234' : 'ui.233')
   ], button, [
     document.getElementById("intermediateText").textContent,
     document.querySelector("#cipherResult span").textContent

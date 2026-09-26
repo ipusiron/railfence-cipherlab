@@ -35,6 +35,14 @@ Its four tabs—Encrypt, Decrypt, Study, and Lab—cover everything from the bas
 >
 > *English Study tab: Method 1 and Method 2 examples for `HELLO` with three rails.*
 
+> ![Japanese Lab with expanded key search](assets/screenshot3.png)
+>
+> *Japanese Lab tab: the `Meet me at the old bridge at midnight` ciphertext, all offset and direction variants, and the highest-ranked bigram candidates.*
+
+> ![Japanese movement mapping](assets/screenshot4.png)
+>
+> *Japanese Encrypt tab: `HELLOWORLD`, three zigzag rails, start position 1, with plaintext-to-ciphertext mapping and movement statistics.*
+
 ---
 
 ## 🎯 Intended audience
@@ -369,6 +377,7 @@ npm test
 | File | Checks |
 |---|---|
 | `test/core.test.js` | 14 known-answer rows, two samples, eight preprocessing cases, and 410 round trips |
+| `test/core2.test.js` | Extended keys, movement, brute force, the frequency table, and transposition checks |
 | `test/format.test.js` | Maximum lines of 160 characters for JS/CSS/tests and 250 for HTML, plus minimum file lengths |
 | `test/html.test.js` | CSP, ARIA, prohibited constructs, core calls, and samples |
 | `test/i18n.test.js` | Matching keys, placeholders, references, Japanese literals, and language priority |
@@ -391,16 +400,20 @@ railfence-cipherlab/            # Project root
 │   │   └── screenshot.png      # Study tab: both method examples
 │   ├── screenshot.png          # Encrypt tab: zigzag, three rails
 │   └── screenshot2.png         # Decrypt tab: restored Sample 2
+│   ├── screenshot3.png         # Lab tab: extended-key brute-force results
+│   └── screenshot4.png         # Encrypt tab: character-position mapping
 ├── js/                         # Scripts
 │   ├── common.js               # Tabs, warnings, clipboard, toasts, and help
 │   ├── decrypt.js              # Decrypt tab UI
 │   ├── encrypt.js              # Encrypt tab UI
 │   ├── i18n.js                 # Japanese/English dictionaries and switching
 │   ├── lab.js                  # Lab tab UI
+│   ├── railfence-bigrams.js    # Generated English bigram frequency table
 │   └── railfence-core.js       # DOM-independent cipher operations
 ├── test/                       # Automated tests using node --test
 │   ├── contrast.test.js        # Color contrast ratios
 │   ├── core.test.js            # Cipher known answers and round trips
+│   ├── core2.test.js           # Extended key, movement, scoring, and transposition checks
 │   ├── format.test.js          # Maximum line and minimum file lengths
 │   ├── html.test.js            # CSP, ARIA, and prohibited constructs
 │   ├── i18n.test.js            # Dictionary keys and Japanese literals

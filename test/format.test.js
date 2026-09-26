@@ -17,6 +17,7 @@ const minimums = {
   'style.css': 1000,
   'index.html': 400,
   'js/railfence-core.js': 40,
+  'js/railfence-bigrams.js': 60,
   'js/encrypt.js': 250,
   'js/decrypt.js': 250,
   'js/lab.js': 200,

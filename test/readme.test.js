@@ -99,12 +99,12 @@ for (const [language, file] of docs.entries()) {
     assert.deepEqual(files.sort(), [...new Set(actual)].sort());
   });
 
-  test(file + ': all three PNG files exist and are referenced', () => {
+  test(file + ': all five PNG files exist and are referenced', () => {
     const refs = [...text.matchAll(/!\[[^\]]*\]\((assets\/[^)]+\.png)\)/g)].map(m => m[1]).sort();
     const walk = dir => fs.readdirSync(path.join(root, dir), { withFileTypes: true })
       .flatMap(e => e.isDirectory() ? walk(dir + '/' + e.name) : [dir + '/' + e.name]);
     const pngs = walk('assets').filter(f => f.endsWith('.png')).sort();
-    assert.equal(refs.length, 3);
+    assert.equal(refs.length, 5);
     assert.deepEqual(refs, pngs);
     for (const image of refs) assert.ok(fs.statSync(path.join(root, image)).size <= 300 * 1024);
   });
@@ -132,4 +132,3 @@ test('Japanese YAML keeps baseline identity values and block-list structure', ()
   assert.ok(text.startsWith('[English](README.en.md) · 日本語'));
   assert.ok(read('README.en.md').startsWith('English · [日本語](README.md)'));
 });
-

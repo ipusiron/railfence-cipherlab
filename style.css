@@ -1287,3 +1287,33 @@ button:hover:not(:disabled),
     scroll-behavior: auto !important;
   }
 }
+/* Plaintext-to-ciphertext position map. */
+.movement-diagram {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.movement-diagram svg {
+  display: block;
+  min-width: 240px;
+  width: 100%;
+  color: #333;
+}
+
+.movement-diagram text {
+  fill: currentColor;
+}
+
+.movement-line {
+  stroke: var(--primary);
+  stroke-width: 1.5;
+}
+
+#movementStats {
+  margin: 0.5rem 0;
+}
+
+.rail-label {
+  white-space: nowrap;
+}

@@ -64,6 +64,15 @@
           <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
         </select>
       </label>
+      <label><span data-i18n="ui.231">開始位置:</span>
+        <select id="railOffset"></select>
+      </label>
+      <label><span data-i18n="ui.232">方向:</span>
+        <select id="railDirection">
+          <option value="down" data-i18n="ui.233">上から下へ</option>
+          <option value="up" data-i18n="ui.234">下から上へ</option>
+        </select>
+      </label>
     </div>
 
     <label>
@@ -85,6 +94,8 @@
     <div id="railDisplay"></div>
     <div class="readonly-box" id="intermediateText"></div>
     <div id="cipherResult" aria-live="polite"></div>
+    <div id="movementDiagram" class="movement-diagram" role="img" aria-live="polite"></div>
+    <div id="movementStats" aria-live="polite"></div>
     
     <div id="exportControls" class="export-controls hidden">
       <button type="button" data-action="exportAsImage" data-i18n="ui.24">📷 画像で保存</button>
@@ -125,6 +136,15 @@
           <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
         </select>
       </label>
+      <label><span data-i18n="ui.231">開始位置:</span>
+        <select id="decryptRailOffset"></select>
+      </label>
+      <label><span data-i18n="ui.232">方向:</span>
+        <select id="decryptRailDirection">
+          <option value="down" data-i18n="ui.233">上から下へ</option>
+          <option value="up" data-i18n="ui.234">下から上へ</option>
+        </select>
+      </label>
     </div>
 
     <label>
@@ -143,6 +163,10 @@
     <div id="decryptDisplay"></div>
     <div class="readonly-box" id="decryptIntermediateText"></div>
     <div id="plainResult" aria-live="polite"></div>
+    <label class="transposition-control">
+      <input type="checkbox" id="transpositionCheck"> <span data-i18n="ui.239">転置式かを確認</span>
+    </label>
+    <div id="transpositionResult" aria-live="polite"></div>
     
     <div id="decryptExportControls" class="export-controls hidden">
       <button type="button" data-action="exportDecryptAsImage" data-i18n="ui.24">📷 画像で保存</button>
@@ -166,6 +190,7 @@
           <li data-i18n="ui.39">読み取った順序で文字を並べて暗号文を作成</li>
         </ol>
       </div>
+      <p data-i18n="ui.235">開始位置は配置パターンを周期内でずらし、方向はレールの上下を反転します。どちらも鍵の一部です。</p>
     </div>
 
     <div class="study-section">
@@ -355,6 +380,7 @@
         <label for="labCiphertext" data-i18n="ui.139">解読したい暗号文:</label>
         <textarea id="labCiphertext" maxlength="500" rows="3" placeholder="解読したい暗号文を入力してください" data-i18n-placeholder="ui.140"></textarea>
       </div>
+      <div id="labTranspositionResult" aria-live="polite"></div>
       
       <div class="experiment-controls">
         <label><span data-i18n="ui.141">試行するレール数:</span>
@@ -366,8 +392,15 @@
             <option value="4-6" data-i18n="ui.146">4-6レール</option>
           </select>
         </label>
+        <label><span data-i18n="ui.236">方式:</span>
+          <select id="labMethods">
+            <option value="both" data-i18n="ui.237">両方式</option>
+            <option value="sequential" data-i18n="ui.16">方式1（順次）</option>
+            <option value="zigzag" data-i18n="ui.17">方式2（交互）</option>
+          </select>
+        </label>
         <label>
-          <input type="checkbox" id="labBothMethods" checked> <span data-i18n="ui.147">両方式を試行</span>
+          <input type="checkbox" id="labWithOffsets"> <span data-i18n="ui.238">開始位置と方向も試行</span>
         </label>
       </div>
       
@@ -501,6 +534,7 @@
     </div>
   </footer>
 
+  <script src="js/railfence-bigrams.js"></script>
   <script src="js/railfence-core.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/common.js"></script>
