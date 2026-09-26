@@ -4,11 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.join(__dirname, '..');
 
-// Existing sources acquire the maximum-line gate when their migration is complete.
-for (const file of ['js/railfence-core.js', 'js/i18n.js', ...fs.readdirSync(__dirname).map(f => `test/${f}`)]) {
+const sources = ['style.css', 'index.html', ...fs.readdirSync(path.join(root, 'js')).map(f => `js/${f}`)];
+for (const file of [...sources, ...fs.readdirSync(__dirname).map(f => `test/${f}`)]) {
   test(`readable lines: ${file}`, () => {
     fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/).forEach((line, i) => {
-      assert.ok(Array.from(line).length <= 160, `${file}:${i + 1}`);
+      assert.ok(Array.from(line).length <= (file === 'index.html' ? 250 : 160), `${file}:${i + 1}`);
     });
   });
 }

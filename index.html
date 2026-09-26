@@ -3,36 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>RailFence CipherLab</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <noscript>このツールにはJavaScriptが必要です。<br>JavaScript is required to use this tool.</noscript>
   <header>
     <div class="header-content">
       <div class="header-text">
         <h1>RailFence CipherLab</h1>
         <p>レールフェンス暗号を視覚的に学ぶツール</p>
       </div>
-      <button class="help-button" onclick="openHelpModal()" title="ヘルプ">?</button>
+      <button type="button" class="help-button" data-action="openHelpModal" title="ヘルプ">?</button>
     </div>
   </header>
 
-  <div class="tabs">
-    <button class="tab-button active" data-tab="encrypt">暗号化</button>
-    <button class="tab-button" data-tab="decrypt">復号</button>
-    <button class="tab-button" data-tab="study">座学</button>
-    <button class="tab-button" data-tab="lab">実験室</button>
+  <div class="tabs" role="tablist" aria-label="機能">
+    <button type="button" class="tab-button active" data-tab="encrypt" id="tab-encrypt"
+      role="tab" aria-controls="encrypt" aria-selected="true" tabindex="0">暗号化</button>
+    <button type="button" class="tab-button" data-tab="decrypt" id="tab-decrypt"
+      role="tab" aria-controls="decrypt" aria-selected="false" tabindex="-1">復号</button>
+    <button type="button" class="tab-button" data-tab="study" id="tab-study"
+      role="tab" aria-controls="study" aria-selected="false" tabindex="-1">座学</button>
+    <button type="button" class="tab-button" data-tab="lab" id="tab-lab"
+      role="tab" aria-controls="lab" aria-selected="false" tabindex="-1">実験室</button>
   </div>
 
-  <div class="tab-content" id="encrypt">
+  <div class="tab-content" id="encrypt" role="tabpanel" aria-labelledby="tab-encrypt">
     <h2>暗号化</h2>
     <div class="sample-buttons">
-      <button class="sample-btn" onclick="loadSample(1)">サンプル1</button>
-      <button class="sample-btn" onclick="loadSample(2)">サンプル2</button>
-      <button class="sample-btn" onclick="clearText()">クリア</button>
+      <button type="button" class="sample-btn" data-action="loadSample" data-sample="1">サンプル1</button>
+      <button type="button" class="sample-btn" data-action="loadSample" data-sample="2">サンプル2</button>
+      <button type="button" class="sample-btn" data-action="clearText">クリア</button>
     </div>
-    <textarea id="plaintext" rows="4" placeholder="平文を入力してください"></textarea>
-    <div id="warning-area"></div>
+    <textarea id="plaintext" maxlength="500" rows="4" placeholder="平文を入力してください"></textarea>
+    <div id="warning-area" aria-live="polite"></div>
     <label><input type="checkbox" id="removeSpace" /> 空白を除いて処理する</label>
     <label><input type="checkbox" id="removeSymbol" /> 記号を除いて処理する</label>
 
@@ -57,13 +65,13 @@
     <label>
       <input type="checkbox" id="realtimeMode" checked> リアルタイム暗号化
     </label>
-    <button id="encryptBtn" onclick="encrypt()" disabled>暗号化する</button>
+    <button type="button" id="encryptBtn" data-action="encrypt" disabled>暗号化する</button>
     
     <div class="readonly-box" id="cleanedText"></div>
     
     <div id="animationControls" class="animation-controls hidden">
-      <button id="playBtn" onclick="toggleAnimation()">▶ 再生</button>
-      <button onclick="resetAnimation()">⏹ リセット</button>
+      <button type="button" id="playBtn" data-action="toggleAnimation">▶ 再生</button>
+      <button type="button" data-action="resetAnimation">⏹ リセット</button>
       <label>速度:
         <input type="range" id="animationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります">
         <span id="speedDisplay">100ms</span>
@@ -72,30 +80,30 @@
     
     <div id="railDisplay"></div>
     <div class="readonly-box" id="intermediateText"></div>
-    <div id="cipherResult"></div>
+    <div id="cipherResult" aria-live="polite"></div>
     
     <div id="exportControls" class="export-controls hidden">
-      <button onclick="exportAsImage()">📷 画像で保存</button>
-      <button onclick="exportAsText()">📄 テキストで保存</button>
-      <button onclick="printRailGrid()">🖨 印刷</button>
+      <button type="button" data-action="exportAsImage">📷 画像で保存</button>
+      <button type="button" data-action="exportAsText">📄 テキストで保存</button>
+      <button type="button" data-action="printRailGrid">🖨 印刷</button>
     </div>
   </div>
 
-  <div class="tab-content hidden" id="decrypt">
+  <div class="tab-content hidden" id="decrypt" role="tabpanel" aria-labelledby="tab-decrypt">
     <h2>復号</h2>
     
     <div class="sync-controls-top">
-      <button id="syncFromEncrypt" onclick="syncFromEncryptTab()">🔄 暗号化タブの設定を同期</button>
+      <button type="button" id="syncFromEncrypt" data-action="syncFromEncryptTab">🔄 暗号化タブの設定を同期</button>
       <span id="syncStatus" class="sync-status"></span>
     </div>
     
     <div class="sample-buttons">
-      <button class="sample-btn" onclick="loadDecryptSample(1)">サンプル1</button>
-      <button class="sample-btn" onclick="loadDecryptSample(2)">サンプル2</button>
-      <button class="sample-btn" onclick="clearDecryptText()">クリア</button>
+      <button type="button" class="sample-btn" data-action="loadDecryptSample" data-sample="1">サンプル1</button>
+      <button type="button" class="sample-btn" data-action="loadDecryptSample" data-sample="2">サンプル2</button>
+      <button type="button" class="sample-btn" data-action="clearDecryptText">クリア</button>
     </div>
-    <textarea id="ciphertext" rows="4" placeholder="暗号文を入力してください"></textarea>
-    <div id="decryptWarningArea"></div>
+    <textarea id="ciphertext" maxlength="500" rows="4" placeholder="暗号文を入力してください"></textarea>
+    <div id="decryptWarningArea" aria-live="polite"></div>
     
     <div>
       <label>レール数:
@@ -118,11 +126,11 @@
     <label>
       <input type="checkbox" id="decryptRealtimeMode" checked> リアルタイム復号
     </label>
-    <button id="decryptBtn" onclick="decrypt()" disabled>復号する</button>
+    <button type="button" id="decryptBtn" data-action="decrypt" disabled>復号する</button>
     
     <div id="decryptAnimationControls" class="animation-controls hidden">
-      <button id="decryptPlayBtn" onclick="toggleDecryptAnimation()">▶ 再生</button>
-      <button onclick="resetDecryptAnimation()">⏹ リセット</button>
+      <button type="button" id="decryptPlayBtn" data-action="toggleDecryptAnimation">▶ 再生</button>
+      <button type="button" data-action="resetDecryptAnimation">⏹ リセット</button>
       <label>速度:
         <input type="range" id="decryptAnimationSpeed" min="100" max="2000" value="100" step="100" title="右に動かすとゆっくり、左に動かすと速くなります">
         <span id="decryptSpeedDisplay">100ms</span>
@@ -130,16 +138,16 @@
     </div>
     <div id="decryptDisplay"></div>
     <div class="readonly-box" id="decryptIntermediateText"></div>
-    <div id="plainResult"></div>
+    <div id="plainResult" aria-live="polite"></div>
     
     <div id="decryptExportControls" class="export-controls hidden">
-      <button onclick="exportDecryptAsImage()">📷 画像で保存</button>
-      <button onclick="exportDecryptAsText()">📄 テキストで保存</button>
-      <button onclick="printDecryptRailGrid()">🖨 印刷</button>
+      <button type="button" data-action="exportDecryptAsImage">📷 画像で保存</button>
+      <button type="button" data-action="exportDecryptAsText">📄 テキストで保存</button>
+      <button type="button" data-action="printDecryptRailGrid">🖨 印刷</button>
     </div>
   </div>
 
-  <div class="tab-content hidden" id="study">
+  <div class="tab-content hidden" id="study" role="tabpanel" aria-labelledby="tab-study">
     <h2>📚 レールフェンス暗号について学ぼう</h2>
     
     <div class="study-section">
@@ -243,13 +251,13 @@
       <h4>📈 暗号化の強度</h4>
       <ul>
         <li><strong>レール数の影響</strong>：レール数が多いほど複雑になる</li>
-        <li><strong>文字長の影響</strong>：長い文章ほど解読が困難</li>
+        <li><strong>文字長の影響</strong>：鍵（レール数と方式）の数は文の長さでは増えない。長い文ほど、総当たりの候補から正しい文を見分けやすい</li>
         <li><strong>方式の選択</strong>：ジグザグ方式の方がやや複雑</li>
       </ul>
 
       <h4>⚠️ セキュリティの弱点</h4>
       <ul>
-        <li><strong>頻度分析に弱い</strong>：文字の出現頻度は変わらない</li>
+        <li><strong>転置式だと見抜かれやすい</strong>：文字の出現頻度が平文と同じなので、頻度を見れば換字式でなく転置式だと分かる（頻度分析で平文が求まるわけではない）</li>
         <li><strong>鍵空間が狭い</strong>：レール数と方式のみが鍵</li>
         <li><strong>総当たり攻撃</strong>：現代では容易に解読可能</li>
         <li><strong>パターン推測</strong>：短い文章では配置が推測しやすい</li>
@@ -261,8 +269,8 @@
       
       <h4>👨‍💻 攻撃者の手法</h4>
       <ol>
-        <li><strong>総当たり攻撃</strong>：全てのレール数・方式を試行</li>
-        <li><strong>頻度分析</strong>：言語の特性を利用した解読</li>
+        <li><strong>総当たり攻撃</strong>：すべてのレール数・方式を試行</li>
+        <li><strong>頻度の比較</strong>：暗号文の文字の頻度が言語の頻度と同じなら、転置式と見分ける</li>
         <li><strong>辞書攻撃</strong>：既知の単語パターンとの照合</li>
         <li><strong>文脈推測</strong>：部分的に解読した内容から推測</li>
       </ol>
@@ -319,7 +327,7 @@
     </div>
   </div>
 
-  <div class="tab-content hidden" id="lab">
+  <div class="tab-content hidden" id="lab" role="tabpanel" aria-labelledby="tab-lab">
     <h2>実験室</h2>
     <p>レールフェンス暗号の様々な実験を行うことができます。</p>
     
@@ -340,8 +348,8 @@
       </div>
       
       <div class="experiment-input">
-        <label>解読したい暗号文:</label>
-        <textarea id="labCiphertext" rows="3" placeholder="解読したい暗号文を入力してください"></textarea>
+        <label for="labCiphertext">解読したい暗号文:</label>
+        <textarea id="labCiphertext" maxlength="500" rows="3" placeholder="解読したい暗号文を入力してください"></textarea>
       </div>
       
       <div class="experiment-controls">
@@ -359,9 +367,9 @@
         </label>
       </div>
       
-      <button id="bruteForceBtn" onclick="performBruteForce()">🔍 総当たり解読開始</button>
+      <button type="button" id="bruteForceBtn" disabled data-action="performBruteForce">🔍 総当たり解読開始</button>
       
-      <div id="bruteForceResults" class="experiment-results"></div>
+      <div id="bruteForceResults" aria-live="polite" class="experiment-results"></div>
     </div>
     
     <div class="experiment-section">
@@ -372,31 +380,27 @@
           <summary>🔍 この実験で分かること</summary>
           <ul>
             <li><strong>最適な鍵の選択:</strong> 入力した平文に対して、どのレール数・方式が最も効果的に元の文字順序を隠蔽するかを比較</li>
-            <li><strong>文字の移動距離:</strong> 各設定で文字がどれだけ元の位置から移動するかを数値化（大きいほど安全）</li>
-            <li><strong>エントロピー変化:</strong> 暗号化により文字分布がどれだけランダムになるかを測定</li>
-            <li><strong>セキュリティレベル:</strong> 文字長や内容に応じた最適な暗号化強度の判定</li>
-          </ul>
-          <p><small>💡 <strong>実用例:</strong> 短いメッセージには高いレール数、長いメッセージには方式2（交互）が効果的な場合が多いです。</small></p>
-        </details>
+            <li><strong>文字の移動距離:</strong> 各設定で文字がどれだけ元の位置から移動するかを数値化（大きいほど元の並びから離れる。安全さの指標ではない）</li>
+            <li><strong>エントロピー変化:</strong> 転置では文字の出現回数が変わらないので、常に0になる（転置式の特徴）</li>          </ul>        </details>
       </div>
       
       <div class="experiment-input">
-        <label>分析したい平文:</label>
-        <textarea id="labPlaintext" rows="3" placeholder="分析したい平文を入力してください"></textarea>
+        <label for="labPlaintext">分析したい平文:</label>
+        <textarea id="labPlaintext" maxlength="500" rows="3" placeholder="分析したい平文を入力してください"></textarea>
       </div>
       
-      <button onclick="performStatistics()">📈 統計分析開始</button>
+      <button type="button" id="statisticsBtn" disabled data-action="performStatistics">📈 統計分析開始</button>
       
-      <div id="statisticsResults" class="experiment-results"></div>
+      <div id="statisticsResults" aria-live="polite" class="experiment-results"></div>
     </div>
   </div>
 
   <!-- ヘルプモーダル -->
-  <div id="helpModal" class="modal hidden">
+  <div id="helpModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>📚 RailFence CipherLab ヘルプ</h2>
-        <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+        <h2 id="helpTitle">📚 RailFence CipherLab ヘルプ</h2>
+        <button type="button" class="modal-close" aria-label="ヘルプを閉じる" data-action="closeHelpModal">&times;</button>
       </div>
       <div class="modal-body">
         <div class="help-section">
@@ -478,7 +482,7 @@
             <li><strong>対応ブラウザー</strong>：モダンブラウザー（Chrome, Firefox, Safari, Edge）</li>
             <li><strong>技術スタック</strong>：HTML5, CSS3, Vanilla JavaScript</li>
             <li><strong>ライセンス</strong>：MIT License</li>
-            <li><strong>ソースコード</strong>：<a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank">GitHub</a></li>
+            <li><strong>ソースコード</strong>：<a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank" rel="noopener noreferrer">GitHub</a></li>
           </ul>
         </div>
       </div>
@@ -487,7 +491,7 @@
 
   <footer>
     <div class="footer">
-      🔗 GitHubリポジトリはこちら（ <a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank">ipusiron/railfence-cipherlab</a> ）
+      🔗 GitHubリポジトリはこちら（ <a href="https://github.com/ipusiron/railfence-cipherlab" target="_blank" rel="noopener noreferrer">ipusiron/railfence-cipherlab</a> ）
     </div>
   </footer>
 

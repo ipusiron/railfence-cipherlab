@@ -162,6 +162,7 @@ function encrypt() {
 }
 
 function renderEncryption(animate) {
+  animate = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
   clearInterval(animationState.intervalId);
   const text = document.getElementById("plaintext").value;
   const cleaned = cleanText(text, document.getElementById("removeSpace").checked,
@@ -201,6 +202,11 @@ function displayRailGrid(matrix, railCount, textLength, hideAll = false) {
 }
 
 function toggleAnimation() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    displayRailGrid(animationState.railMatrix, animationState.railCount, animationState.sequence.length, false);
+    animationState.currentStep = animationState.sequence.length;
+    return;
+  }
   const playBtn = document.getElementById("playBtn");
   
   if (animationState.isPlaying) {

@@ -1,10 +1,52 @@
 // common.js - 共通機能
 
 // タブ切り替え機能
+document.addEventListener("click", event => {
+  const button = event.target.closest("button[data-action]");
+  if (!button || button.disabled) return;
+  const actions = {
+    openHelpModal, closeHelpModal, loadSample, loadDecryptSample, clearText, clearDecryptText,
+    encrypt, decrypt, toggleAnimation, resetAnimation, toggleDecryptAnimation, resetDecryptAnimation,
+    exportAsImage, exportAsText, printRailGrid, exportDecryptAsImage, exportDecryptAsText,
+    printDecryptRailGrid, syncFromEncryptTab, performBruteForce, performStatistics
+  };
+  const action = actions[button.dataset.action];
+  if (action) action(Number(button.dataset.sample));
+});
+
+document.addEventListener("keydown", event => {
+  const modal = document.getElementById("helpModal");
+  if (!modal.classList.contains("hidden") && event.key === "Tab") {
+    const items = [...modal.querySelectorAll("button, a[href], input, select, textarea, [tabindex='0']")];
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+  if (!event.target.matches(".tab-button") || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+  event.preventDefault();
+  const tabs = [...document.querySelectorAll(".tab-button")];
+  const direction = event.key === "ArrowRight" ? 1 : -1;
+  const next = tabs[(tabs.indexOf(event.target) + direction + tabs.length) % tabs.length];
+  next.click();
+  next.focus();
+});
+
 document.querySelectorAll(".tab-button").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-button").forEach(b => {
+      b.classList.remove("active");
+      b.setAttribute("aria-selected", "false");
+      b.tabIndex = -1;
+    });
     btn.classList.add("active");
+    btn.setAttribute("aria-selected", "true");
+    btn.tabIndex = 0;
 
     const tab = btn.dataset.tab;
     document.querySelectorAll(".tab-content").forEach(c => {
@@ -89,6 +131,7 @@ function copyToClipboard(text, event) {
 function createCopyButton(textToCopy, label = i18n.t('message.10')) {
   const button = document.createElement('button');
   button.className = 'copy-btn';
+  button.type = 'button';
   button.textContent = label;
   button.dataset.copyText = textToCopy;
   button.addEventListener('click', (e) => copyToClipboard(null, e));
@@ -122,13 +165,8 @@ function showToast(element, message, type = "success") {
   toast.className = `toast ${type}`;
   toast.textContent = message;
   
-  const rect = element.getBoundingClientRect();
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  
-  toast.style.position = 'absolute';
-  toast.style.left = rect.left + (rect.width / 2) + 'px';
-  toast.style.top = (rect.top + scrollTop - 10) + 'px';
-  toast.style.transform = 'translate(-50%, -100%)';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
   
   document.body.appendChild(toast);
   
@@ -148,13 +186,15 @@ function showToast(element, message, type = "success") {
 function openHelpModal() {
   const modal = document.getElementById('helpModal');
   modal.classList.remove('hidden');
-  document.body.style.overflow = 'hidden'; // スクロールを無効化
+  modal.querySelector('button').focus();
+  document.body.classList.add('modal-open'); // スクロールを無効化
 }
 
 function closeHelpModal() {
   const modal = document.getElementById('helpModal');
   modal.classList.add('hidden');
-  document.body.style.overflow = 'auto'; // スクロールを有効化
+  document.body.classList.remove('modal-open');
+  document.querySelector('.help-button').focus(); // スクロールを有効化
 }
 
 // モーダル外をクリックしたときに閉じる

@@ -14,7 +14,7 @@ function initializeLabTab() {
   
   // 統計実験のイベントリスナー
   document.getElementById("labPlaintext").addEventListener("input", (e) => {
-    const statisticsBtn = document.querySelector("button[onclick='performStatistics()']");
+    const statisticsBtn = document.getElementById("statisticsBtn");
     if (statisticsBtn) {
       statisticsBtn.disabled = e.target.value.trim().length === 0;
     }

@@ -298,9 +298,10 @@ function performDecryptionLogic(text, railCount, method) {
 }
 
 function decrypt() {
+  clearInterval(decryptAnimationState.intervalId);
   const realtimeMode = document.getElementById("decryptRealtimeMode").checked;
   
-  if (realtimeMode) {
+  if (realtimeMode || matchMedia('(prefers-reduced-motion: reduce)').matches) {
     // リアルタイムモードの場合は単純に復号を実行
     decryptWithoutAnimation();
     return;
@@ -351,6 +352,12 @@ function decrypt() {
 
 // アニメーション制御関数
 function toggleDecryptAnimation() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    displayDecryptRailGrid(decryptAnimationState.railMatrix, decryptAnimationState.railCount,
+      decryptAnimationState.sequence.length, false);
+    decryptAnimationState.currentStep = decryptAnimationState.sequence.length;
+    return;
+  }
   const playBtn = document.getElementById("decryptPlayBtn");
   
   if (decryptAnimationState.isPlaying) {
