@@ -32,10 +32,10 @@ function initializeDecryptTab() {
     // 文字数制限チェック
     if (!canContinue) {
       // 制限を超えた場合、最後の文字を削除
-      e.target.value = e.target.value.slice(0, CHARACTER_LIMITS.HARD_LIMIT);
+      e.target.value = Array.from(e.target.value).slice(0, CHARACTER_LIMITS.HARD_LIMIT).join("");
       updateDecryptWarning(e.target.value);
       updateDecryptButton(e.target.value);
-      showToast(e.target, "文字数制限に達しました", "error");
+      showToast(e.target, i18n.t('message.13'), "error");
     }
     
     // リアルタイム復号
@@ -52,7 +52,7 @@ function initializeDecryptTab() {
       performRealtimeDecryption();
     } else if (!document.getElementById("decryptRealtimeMode").checked && document.getElementById("ciphertext").value.trim().length > 0) {
       // リアルタイムモードでない場合も、既に復号結果が表示されていれば更新
-      if (document.getElementById("plainResult").innerHTML.trim() !== "") {
+      if (document.getElementById("plainResult").textContent.trim() !== "") {
         decrypt();
       }
     }
@@ -63,7 +63,7 @@ function initializeDecryptTab() {
       performRealtimeDecryption();
     } else if (!document.getElementById("decryptRealtimeMode").checked && document.getElementById("ciphertext").value.trim().length > 0) {
       // リアルタイムモードでない場合も、既に復号結果が表示されていれば更新
-      if (document.getElementById("plainResult").innerHTML.trim() !== "") {
+      if (document.getElementById("plainResult").textContent.trim() !== "") {
         decrypt();
       }
     }
@@ -74,12 +74,12 @@ function initializeDecryptTab() {
     const ciphertext = document.getElementById("ciphertext").value;
     
     if (e.target.checked) {
-      decryptBtn.textContent = "復号を更新";
+      decryptBtn.textContent = i18n.t('message.31');
       if (ciphertext.trim().length > 0) {
         performRealtimeDecryption();
       }
     } else {
-      decryptBtn.textContent = "復号する";
+      decryptBtn.textContent = i18n.t('message.32');
     }
     
     // ボタンの有効/無効状態を更新
@@ -107,7 +107,7 @@ function initializeDecryptTab() {
           clearInterval(decryptAnimationState.intervalId);
           decryptAnimationState.isPlaying = false;
           const playBtn = document.getElementById("decryptPlayBtn");
-          playBtn.textContent = "▶ 再生";
+          playBtn.textContent = i18n.t('message.16');
           playBtn.disabled = true;  // アニメーション完了時は無効化
         }
       }, speed);
@@ -127,45 +127,7 @@ function updateDecryptButton(text) {
 }
 
 function updateDecryptWarning(text) {
-  let warning = [];
-  let warningLevel = "info"; // info, warning, error
-  const textLength = text.length;
-  
-  // 文字数チェック
-  if (textLength >= CHARACTER_LIMITS.INFO_START) {
-    if (textLength >= CHARACTER_LIMITS.HARD_LIMIT) {
-      warning.push(`文字数制限に達しました (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
-      warningLevel = "error";
-    } else if (textLength >= 400) {
-      warning.push(`文字数制限に近づいています (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
-      warningLevel = "warning";
-    } else if (textLength >= CHARACTER_LIMITS.SOFT_WARNING) {
-      warning.push(`文字数が多いです (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
-      warningLevel = "warning";
-    } else {
-      warning.push(`文字数: ${textLength}/${CHARACTER_LIMITS.HARD_LIMIT}`);
-    }
-  }
-  
-  // 暗号文特有の警告
-  if (/\s/.test(text)) warning.push("空白が含まれています（復号には影響しません）");
-  if (/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(text)) warning.push("特殊文字が含まれています");
-  if (/\n/.test(text)) {
-    warning.push("改行は無視して処理されます");
-    if (warningLevel !== "error") warningLevel = "error";
-  }
-  
-  const warningArea = document.getElementById("decryptWarningArea");
-  warningArea.textContent = warning.join(" / ");
-  
-  // スタイル適用
-  warningArea.classList.remove("error", "info", "warning");
-  if (warning.length > 0) {
-    warningArea.classList.add(warningLevel);
-  }
-  
-  // 文字数制限チェック（入力制御用）
-  return textLength < CHARACTER_LIMITS.HARD_LIMIT;
+  return updateWarning(text, "decryptWarningArea");
 }
 
 function performRealtimeDecryption() {
@@ -190,12 +152,12 @@ function decryptWithoutAnimation() {
   
   displayDecryptRailGrid(result.railMatrix, railCount, text.length, false);
 
-  document.getElementById("decryptIntermediateText").innerHTML = result.intermediateText;
+  renderIntermediate("decryptIntermediateText", result.railMatrix);
 
   // 復号結果を安全に表示（XSS対策済み）
-  const resultContainer = createResultContainer("復号結果", result.plaintext);
+  const resultContainer = createResultContainer(i18n.t('message.33'), result.plaintext);
   const plainResultDiv = document.getElementById("plainResult");
-  plainResultDiv.innerHTML = '';
+  plainResultDiv.replaceChildren();
   plainResultDiv.appendChild(resultContainer);
   
   // エクスポートコントロールを表示
@@ -204,8 +166,8 @@ function decryptWithoutAnimation() {
 
 // サンプル暗号文データ（暗号化タブのサンプルを暗号化した結果）
 const decryptSampleTexts = {
-  1: "Hlolelwod,r!",  // "Hello, world!" を3レール・方式1で暗号化した結果
-  2: "アゴゴクニコハマキシチシゴス　ロジ　ヨエニググウウ"  // 日本語サンプルを3レール・方式1で暗号化した結果
+  1: "Hl r!eowll,od", // 除去なし・3レール・方式1
+  2: "アゴク　ハキグ　ウスゴジヨマニチシゴ　ロニコエシニュウ" // 除去なし・3レール・方式1
 };
 
 // サンプル暗号文読み込み機能
@@ -216,10 +178,12 @@ function loadDecryptSample(sampleNumber) {
   if (sampleText) {
     // 文字数制限チェック
     if (sampleText.length > CHARACTER_LIMITS.HARD_LIMIT) {
-      showToast(document.querySelector('.sample-btn'), "サンプルテキストが文字数制限を超えています", "error");
+      showToast(document.querySelector('.sample-btn'), i18n.t('message.19'), "error");
       return;
     }
     
+    document.getElementById("decryptRailCount").value = "3";
+    document.getElementById("decryptMethod").value = "sequential";
     ciphertextArea.value = sampleText;
     
     // イベントを手動で発火してリアルタイム更新をトリガー
@@ -266,8 +230,8 @@ function syncFromEncryptTab() {
     document.getElementById("decryptMethod").value = encryptMethod;
     
     // 暗号文がある場合は自動入力
-    if (encryptCipherResult && encryptCipherResult.textContent.includes("暗号文:")) {
-      const cipherText = encryptCipherResult.textContent.replace("暗号文: ", "");
+    if (encryptCipherResult) {
+      const cipherText = document.querySelector("#cipherResult button").dataset.copyText;
       const ciphertextArea = document.getElementById("ciphertext");
       ciphertextArea.value = cipherText;
       
@@ -278,11 +242,11 @@ function syncFromEncryptTab() {
     
     // 成功メッセージ表示
     const syncStatus = document.getElementById("syncStatus");
-    syncStatus.textContent = "✓ 設定を同期しました";
+    syncStatus.textContent = i18n.t('message.34');
     syncStatus.className = "sync-status success";
     
     // Toast通知
-    showToast(document.getElementById("syncFromEncrypt"), "暗号化タブの設定を同期しました", "success");
+    showToast(document.getElementById("syncFromEncrypt"), i18n.t('message.35'), "success");
     
     // 3秒後にメッセージをクリア
     setTimeout(() => {
@@ -293,10 +257,10 @@ function syncFromEncryptTab() {
   } catch (error) {
     // エラーメッセージ表示
     const syncStatus = document.getElementById("syncStatus");
-    syncStatus.textContent = "⚠ 同期に失敗しました";
+    syncStatus.textContent = i18n.t('message.36');
     syncStatus.className = "sync-status error";
     
-    showToast(document.getElementById("syncFromEncrypt"), "設定の同期に失敗しました", "error");
+    showToast(document.getElementById("syncFromEncrypt"), i18n.t('message.37'), "error");
     
     setTimeout(() => {
       syncStatus.textContent = "";
@@ -315,7 +279,7 @@ function checkAndSuggestSync() {
   // 設定が異なる場合にヒント表示
   if (encryptRailCount !== decryptRailCount || encryptMethod !== decryptMethod) {
     const syncStatus = document.getElementById("syncStatus");
-    syncStatus.textContent = "💡 暗号化タブと設定が異なります";
+    syncStatus.textContent = i18n.t('message.38');
     syncStatus.className = "sync-status";
     
     setTimeout(() => {
@@ -325,74 +289,12 @@ function checkAndSuggestSync() {
 }
 
 function performDecryptionLogic(text, railCount, method) {
-  let len = text.length;
-  let pattern = Array(len).fill(0);
-  let index = 0;
-  let direction = 1;
-
-  // まず、各文字がどのレールに属するかを計算
-  for (let i = 0; i < len; i++) {
-    pattern[i] = index;
-    if (method === "zigzag") {
-      if (index === 0) direction = 1;
-      else if (index === railCount - 1) direction = -1;
-      index += direction;
-    } else {
-      index = (index + 1) % railCount;
-    }
-  }
-
-  let railLengths = Array(railCount).fill(0);
-  for (let i = 0; i < len; i++) {
-    railLengths[pattern[i]]++;
-  }
-
-  // レール配置のマトリックスを作成
-  let railMatrix = Array.from({ length: railCount }, () => 
-    Array(len).fill(null)
-  );
-  
-  // 暗号文をレールに配置
-  let rails = [];
-  let pos = 0;
-  for (let r = 0; r < railCount; r++) {
-    rails[r] = text.slice(pos, pos + railLengths[r]).split("");
-    pos += railLengths[r];
-  }
-  
-  // レールマトリックスに文字を配置
-  for (let i = 0; i < len; i++) {
-    const r = pattern[i];
-    if (rails[r] && rails[r].length > 0) {
-      railMatrix[r][i] = rails[r].shift();
-    }
-  }
-
-  // 復号結果を計算
-  let result = "";
-  for (let i = 0; i < len; i++) {
-    const r = pattern[i];
-    if (railMatrix[r][i]) {
-      result += railMatrix[r][i];
-    }
-  }
-
-  // 中間状態2: レールから読み取った順序を表示（XSS対策済み）
-  let intermediateDisplay = [];
-  for (let r = 0; r < railCount; r++) {
-    const railChars = railMatrix[r].filter(c => c !== null);
-    if (railChars.length > 0) {
-      const escapedChars = escapeHtml(railChars.join(""));
-      intermediateDisplay.push(`Rail${r+1}: <strong>${escapedChars}</strong>`);
-    }
-  }
-
-  return {
-    plaintext: result,
-    railMatrix: railMatrix,
-    intermediateText: intermediateDisplay.join(" → "),
-    pattern: pattern
-  };
+  const plaintext = RailfenceCore.decrypt(text, railCount, method);
+  const chars = Array.from(plaintext);
+  const pattern = RailfenceCore.pattern(chars.length, railCount, method);
+  const railMatrix = Array.from({ length: railCount }, () => Array(chars.length).fill(null));
+  chars.forEach((char, col) => { railMatrix[pattern[col]][col] = char; });
+  return { plaintext, railMatrix, pattern };
 }
 
 function decrypt() {
@@ -417,7 +319,7 @@ function decrypt() {
   
   // アニメーション用のシーケンスを作成
   let sequence = [];
-  for (let i = 0; i < text.length; i++) {
+  for (let i = 0; i < result.pattern.length; i++) {
     const r = result.pattern[i];
     sequence.push({ rail: r, col: i, char: result.railMatrix[r][i] });
   }
@@ -435,12 +337,12 @@ function decrypt() {
   document.getElementById("decryptAnimationControls").classList.remove("hidden");
   displayDecryptRailGrid(result.railMatrix, railCount, text.length, true);
 
-  document.getElementById("decryptIntermediateText").innerHTML = result.intermediateText;
+  renderIntermediate("decryptIntermediateText", result.railMatrix);
 
   // 復号結果を安全に表示（XSS対策済み）
-  const resultContainer = createResultContainer("復号結果", result.plaintext);
+  const resultContainer = createResultContainer(i18n.t('message.33'), result.plaintext);
   const plainResultDiv = document.getElementById("plainResult");
-  plainResultDiv.innerHTML = '';
+  plainResultDiv.replaceChildren();
   plainResultDiv.appendChild(resultContainer);
   
   // エクスポートコントロールを表示
@@ -454,10 +356,10 @@ function toggleDecryptAnimation() {
   if (decryptAnimationState.isPlaying) {
     decryptAnimationState.isPlaying = false;
     clearInterval(decryptAnimationState.intervalId);
-    playBtn.textContent = "▶ 再生";
+    playBtn.textContent = i18n.t('message.16');
   } else {
     decryptAnimationState.isPlaying = true;
-    playBtn.textContent = "⏸ 一時停止";
+    playBtn.textContent = i18n.t('message.18');
     
     const speed = parseInt(document.getElementById("decryptAnimationSpeed").value);
     
@@ -473,7 +375,7 @@ function toggleDecryptAnimation() {
       } else {
         clearInterval(decryptAnimationState.intervalId);
         decryptAnimationState.isPlaying = false;
-        playBtn.textContent = "▶ 再生";
+        playBtn.textContent = i18n.t('message.16');
         playBtn.disabled = true;  // アニメーション完了時は無効化
       }
     }, speed);
@@ -488,42 +390,22 @@ function resetDecryptAnimation() {
   decryptAnimationState.isPlaying = false;
   decryptAnimationState.currentStep = 0;
   const playBtn = document.getElementById("decryptPlayBtn");
-  playBtn.textContent = "▶ 再生";
+  playBtn.textContent = i18n.t('message.16');
   playBtn.disabled = false;  // リセット時は有効化
   
   if (decryptAnimationState.railMatrix) {
-    displayDecryptRailGrid(decryptAnimationState.railMatrix, decryptAnimationState.railCount, decryptAnimationState.ciphertext.length, true);
+    displayDecryptRailGrid(decryptAnimationState.railMatrix, decryptAnimationState.railCount, Array.from(decryptAnimationState.ciphertext).length, true);
   }
 }
 
 function displayDecryptRailGrid(matrix, railCount, textLength, hideAll = false) {
-  let html = '<div class="rail-grid">';
-  
-  for (let r = 0; r < railCount; r++) {
-    html += `<div class="rail-row" data-rail="${r}">`;
-    html += `<div class="rail-label">Rail ${r + 1}</div>`;
-    
-    for (let c = 0; c < textLength; c++) {
-      const char = matrix[r][c];
-      const cellId = `decrypt-cell-${r}-${c}`;
-      if (char !== null) {
-        const hiddenClass = hideAll ? 'hidden-cell' : '';
-        html += `<div class="rail-cell filled ${hiddenClass}" id="${cellId}">${char}</div>`;
-      } else {
-        html += `<div class="rail-cell empty" id="${cellId}"></div>`;
-      }
-    }
-    html += '</div>';
-  }
-  
-  html += '</div>';
-  document.getElementById("decryptDisplay").innerHTML = html;
+  renderRailGrid("decryptDisplay", "decrypt-cell", matrix, hideAll);
 }
 
 function clearDecryptionDisplay() {
-  document.getElementById("decryptDisplay").innerHTML = "";
-  document.getElementById("decryptIntermediateText").innerHTML = "";
-  document.getElementById("plainResult").innerHTML = "";
+  document.getElementById("decryptDisplay").replaceChildren();
+  document.getElementById("decryptIntermediateText").replaceChildren();
+  document.getElementById("plainResult").replaceChildren();
   document.getElementById("decryptAnimationControls").classList.add("hidden");
   document.getElementById("decryptExportControls").classList.add("hidden");
 }
@@ -532,7 +414,7 @@ function clearDecryptionDisplay() {
 function exportDecryptAsImage() {
   const railGrid = document.querySelector('#decryptDisplay .rail-grid');
   if (!railGrid) {
-    showToast(document.querySelector('#decryptExportControls button'), "エクスポートするレール配置がありません", "error");
+    showToast(document.querySelector('#decryptExportControls button'), i18n.t('message.20'), "error");
     return;
   }
 
@@ -592,26 +474,26 @@ function exportDecryptRailAsCanvas() {
   link.download = 'railfence-decrypt.png';
   link.href = canvas.toDataURL();
   link.click();
-  showToast(document.querySelector('#decryptExportControls button'), "画像をダウンロードしました", "success");
+  showToast(document.querySelector('#decryptExportControls button'), i18n.t('message.21'), "success");
 }
 
 function exportDecryptAsText() {
   const railGrid = document.querySelector('#decryptDisplay .rail-grid');
   if (!railGrid) {
-    showToast(document.querySelector('#decryptExportControls button:nth-child(2)'), "エクスポートするレール配置がありません", "error");
+    showToast(document.querySelector('#decryptExportControls button:nth-child(2)'), i18n.t('message.20'), "error");
     return;
   }
 
-  let textOutput = "レールフェンス暗号 - 復号レール配置\n";
+  let textOutput = i18n.t('message.39');
   textOutput += "========================================\n\n";
 
   const ciphertext = document.getElementById("ciphertext").value;
   const railCount = document.getElementById("decryptRailCount").value;
   const method = document.getElementById("decryptMethod").value;
 
-  textOutput += `暗号文: ${ciphertext}\n`;
-  textOutput += `レール数: ${railCount}\n`;
-  textOutput += `方式: ${method === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}\n\n`;
+  textOutput += i18n.t('message.40', [ciphertext]);
+  textOutput += i18n.t('message.24', [railCount]);
+  textOutput += i18n.t('message.27', [method === 'zigzag' ? i18n.t('message.25') : i18n.t('message.26')]);
   
   const rows = railGrid.querySelectorAll('.rail-row');
   rows.forEach(row => {
@@ -642,53 +524,18 @@ function exportDecryptAsText() {
   link.download = 'railfence-decrypt.txt';
   link.href = URL.createObjectURL(blob);
   link.click();
-  showToast(document.querySelector('#decryptExportControls button:nth-child(2)'), "テキストファイルをダウンロードしました", "success");
+  showToast(document.querySelector('#decryptExportControls button:nth-child(2)'), i18n.t('message.28'), "success");
 }
 
 function printDecryptRailGrid() {
-  const railGrid = document.querySelector('#decryptDisplay .rail-grid');
-  if (!railGrid) {
-    showToast(document.querySelector('#decryptExportControls button:nth-child(3)'), "印刷するレール配置がありません", "error");
+  const grid = document.querySelector('#decryptDisplay .rail-grid');
+  const button = document.querySelector('#decryptExportControls button:nth-child(3)');
+  if (!grid) {
+    showToast(button, i18n.t('message.29'), "error");
     return;
   }
-
-  // 印刷用ウィンドウを開く
-  const printWindow = window.open('', '_blank');
-  
-  const printContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>レールフェンス暗号 - 復号レール配置</title>
-      <style>
-        body { font-family: monospace; margin: 20px; }
-        .rail-grid { border: 2px solid #000; }
-        .rail-row { display: table-row; }
-        .rail-label { display: table-cell; padding: 8px; font-weight: bold; border: 1px solid #000; }
-        .rail-cell { display: table-cell; width: 40px; height: 40px; text-align: center; vertical-align: middle; border: 1px solid #000; }
-        .rail-cell.filled { background: #f0f0f0; font-weight: bold; }
-        h1 { text-align: center; }
-        .info { margin-bottom: 20px; }
-      </style>
-    </head>
-    <body>
-      <h1>レールフェンス暗号 - 復号レール配置</h1>
-      <div class="info">
-        <p>暗号文: ${escapeHtml(document.getElementById("ciphertext").value)}</p>
-        <p>レール数: ${escapeHtml(document.getElementById("decryptRailCount").value)}</p>
-        <p>方式: ${document.getElementById("decryptMethod").value === 'zigzag' ? '方式2（交互）' : '方式1（順次）'}</p>
-      </div>
-      ${railGrid.outerHTML}
-      <div style="margin-top: 20px;">
-        <p>${escapeHtml(document.getElementById("decryptIntermediateText").textContent.replace(/<[^>]*>/g, ''))}</p>
-        <p>${escapeHtml(document.querySelector("#plainResult span").textContent)}</p>
-      </div>
-    </body>
-    </html>
-  `;
-  
-  printWindow.document.write(printContent);
-  printWindow.document.close();
-  printWindow.print();
-  showToast(document.querySelector('#decryptExportControls button:nth-child(3)'), "印刷ダイアログを開きました", "success");
+  printGridDocument(grid, i18n.t('message.41'), [
+    document.getElementById("ciphertext").value,
+    document.querySelector("#plainResult span").textContent
+  ], button);
 }

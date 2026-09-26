@@ -1,18 +1,5 @@
 // common.js - 共通機能
 
-// HTMLエスケープ関数（XSS対策）
-function escapeHtml(unsafe) {
-  if (typeof unsafe !== 'string') {
-    return unsafe;
-  }
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 // タブ切り替え機能
 document.querySelectorAll(".tab-button").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -29,13 +16,9 @@ document.querySelectorAll(".tab-button").forEach((btn) => {
 
 // テキストクリーニング関数
 function cleanText(text, removeSpace, removeSymbol) {
-  let cleaned = text.replace(/\n/g, "");
-  if (removeSpace) cleaned = cleaned.replace(/\s/g, "");
-  if (removeSymbol) cleaned = cleaned.replace(/[^\p{L}\p{N}]/gu, "");
-  return cleaned;
+  return RailfenceCore.cleanText(text, removeSpace, removeSymbol);
 }
 
-// 文字数制限の定数
 const CHARACTER_LIMITS = {
   SOFT_WARNING: 100,
   HARD_LIMIT: 500,
@@ -43,36 +26,36 @@ const CHARACTER_LIMITS = {
 };
 
 // 警告表示機能（文字数制限を含む）
-function updateWarning(text) {
+function updateWarning(text, areaId = "warning-area") {
   let warning = [];
   let warningLevel = "info"; // info, warning, error
-  const textLength = text.length;
+  const textLength = Array.from(text).length;
   
   // 文字数チェック
   if (textLength >= CHARACTER_LIMITS.INFO_START) {
     if (textLength >= CHARACTER_LIMITS.HARD_LIMIT) {
-      warning.push(`文字数制限に達しました (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
+      warning.push(i18n.t('message.0', [textLength, CHARACTER_LIMITS.HARD_LIMIT]));
       warningLevel = "error";
     } else if (textLength >= 400) {
-      warning.push(`文字数制限に近づいています (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
+      warning.push(i18n.t('message.1', [textLength, CHARACTER_LIMITS.HARD_LIMIT]));
       warningLevel = "warning";
     } else if (textLength >= CHARACTER_LIMITS.SOFT_WARNING) {
-      warning.push(`文字数が多いです (${textLength}/${CHARACTER_LIMITS.HARD_LIMIT})`);
+      warning.push(i18n.t('message.2', [textLength, CHARACTER_LIMITS.HARD_LIMIT]));
       warningLevel = "warning";
     } else {
-      warning.push(`文字数: ${textLength}/${CHARACTER_LIMITS.HARD_LIMIT}`);
+      warning.push(i18n.t('message.3', [textLength, CHARACTER_LIMITS.HARD_LIMIT]));
     }
   }
   
   // 既存の警告チェック
-  if (/\s/.test(text)) warning.push("空白が含まれています");
-  if (/[^\p{L}\p{N}\s]/u.test(text)) warning.push("記号が含まれています");
+  if (/\s/.test(text)) warning.push(i18n.t('message.4'));
+  if (/[^\p{L}\p{N}\s]/u.test(text)) warning.push(i18n.t('message.5'));
   if (/\n/.test(text)) {
-    warning.push("改行は無視して処理されます");
-    if (warningLevel !== "error") warningLevel = "error";
+    warning.push(i18n.t('message.6'));
+
   }
   
-  const warningArea = document.getElementById("warning-area");
+  const warningArea = document.getElementById(areaId);
   warningArea.textContent = warning.join(" / ");
   
   // スタイル適用
@@ -91,19 +74,19 @@ function copyToClipboard(text, event) {
   const textToCopy = text || (btn ? btn.dataset.copyText : '');
 
   if (!textToCopy) {
-    console.error('コピーするテキストがありません');
+    console.error(i18n.t('message.7'));
     return;
   }
 
   navigator.clipboard.writeText(textToCopy).then(() => {
-    showToast(btn || document.body, "クリップボードにコピーしました！");
+    showToast(btn || document.body, i18n.t('message.8'));
   }).catch(() => {
-    showToast(btn || document.body, "コピーに失敗しました", "error");
+    showToast(btn || document.body, i18n.t('message.9'), "error");
   });
 }
 
 // コピーボタンを安全に作成するヘルパー関数
-function createCopyButton(textToCopy, label = "📋 コピー") {
+function createCopyButton(textToCopy, label = i18n.t('message.10')) {
   const button = document.createElement('button');
   button.className = 'copy-btn';
   button.textContent = label;
@@ -190,3 +173,69 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+// Construct display nodes without interpreting input as markup.
+function uiNode(tag, className = "", text = "") {
+  const node = document.createElement(tag);
+  node.className = className;
+  node.textContent = text;
+  return node;
+}
+
+function renderRailGrid(target, prefix, matrix, hideAll) {
+  const grid = uiNode("div", "rail-grid");
+  matrix.forEach((chars, rail) => {
+    const row = uiNode("div", "rail-row");
+    row.dataset.rail = rail;
+    row.append(uiNode("div", "rail-label", `Rail ${rail + 1}`));
+    chars.forEach((char, col) => {
+      const cell = uiNode("div", "rail-cell", char === null ? "" : char);
+      cell.id = `${prefix}-${rail}-${col}`;
+      cell.classList.add(char === null ? "empty" : "filled");
+      if (hideAll && char !== null) cell.classList.add("hidden-cell");
+      row.append(cell);
+    });
+    grid.append(row);
+  });
+  document.getElementById(target).replaceChildren(grid);
+}
+
+function renderIntermediate(target, matrix) {
+  const nodes = [];
+  matrix.forEach((chars, rail) => {
+    const text = chars.filter(c => c !== null).join("");
+    if (!text) return;
+    if (nodes.length) nodes.push(document.createTextNode(" → "));
+    nodes.push(document.createTextNode(`Rail${rail + 1}: `), uiNode("strong", "", text));
+  });
+  document.getElementById(target).replaceChildren(...nodes);
+}
+
+function printGridDocument(grid, heading, details, button) {
+  const popup = window.open("", "_blank");
+  if (!popup) {
+    showToast(button, i18n.t('message.11'), "error");
+    return;
+  }
+  popup.opener = null;
+  const doc = popup.document;
+  doc.documentElement.lang = document.documentElement.lang;
+  doc.title = heading;
+  const css = doc.createElement("link");
+  css.rel = "stylesheet";
+  css.href = new URL("style.css", document.baseURI).href;
+  css.addEventListener("load", () => { popup.focus(); popup.print(); });
+  doc.head.append(css);
+  const title = doc.createElement("h1");
+  title.textContent = heading;
+  doc.body.append(title);
+  details.forEach(text => {
+    const p = doc.createElement("p");
+    p.textContent = text;
+    doc.body.append(p);
+  });
+  const copy = grid.cloneNode(true);
+  copy.querySelectorAll(".hidden-cell").forEach(cell => cell.classList.remove("hidden-cell"));
+  doc.body.append(copy);
+  showToast(button, i18n.t('message.12'), "success");
+}
