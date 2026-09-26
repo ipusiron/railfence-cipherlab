@@ -1,0 +1,7 @@
+{
+  "name": "railfence-cipherlab",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}
