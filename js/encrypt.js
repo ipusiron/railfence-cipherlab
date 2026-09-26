@@ -412,7 +412,11 @@ function printRailGrid() {
     return;
   }
   printGridDocument(grid, i18n.t('message.30'), [
-    document.getElementById("plaintext").value,
+    i18n.t('message.23', [document.getElementById("plaintext").value]),
+    i18n.t('message.24', [document.getElementById("railCount").value]),
+    i18n.t('message.27', [i18n.t(document.getElementById("method").value === 'zigzag' ? 'message.25' : 'message.26')])
+  ], button, [
+    document.getElementById("intermediateText").textContent,
     document.querySelector("#cipherResult span").textContent
-  ], button);
+  ]);
 }

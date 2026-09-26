@@ -251,7 +251,7 @@ function renderIntermediate(target, matrix) {
   document.getElementById(target).replaceChildren(...nodes);
 }
 
-function printGridDocument(grid, heading, details, button) {
+function printGridDocument(grid, heading, details, button, results = []) {
   const popup = window.open("", "_blank");
   if (!popup) {
     showToast(button, i18n.t('message.11'), "error");
@@ -277,6 +277,11 @@ function printGridDocument(grid, heading, details, button) {
   const copy = grid.cloneNode(true);
   copy.querySelectorAll(".hidden-cell").forEach(cell => cell.classList.remove("hidden-cell"));
   doc.body.append(copy);
+  results.forEach(text => {
+    const p = doc.createElement("p");
+    p.textContent = text;
+    doc.body.append(p);
+  });
   showToast(button, i18n.t('message.12'), "success");
 }
 

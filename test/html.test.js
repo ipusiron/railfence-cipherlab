@@ -55,3 +55,16 @@ test('A-3 sample ciphertext literals are exact', () => {
   assert.equal(samples[1], 'Hl r!eowll,od');
   assert.equal(samples[2], 'アゴク\u3000ハキグ\u3000ウスゴジヨマニチシゴ\u3000ロニコエシニュウ');
 });
+
+test('printing retains translated input, rails, method, intermediate text, and result', () => {
+  for (const [file, inputKey, intermediate, result] of [
+    ['encrypt.js', 'message.23', 'intermediateText', 'cipherResult'],
+    ['decrypt.js', 'message.40', 'decryptIntermediateText', 'plainResult']
+  ]) {
+    const source = fs.readFileSync(path.join(root, 'js', file), 'utf8');
+    const printing = source.slice(source.lastIndexOf('function print'));
+    for (const key of [inputKey, 'message.24', 'message.27']) assert.ok(printing.includes("i18n.t('" + key + "'"));
+    assert.ok(printing.includes(intermediate));
+    assert.ok(printing.includes(result));
+  }
+});

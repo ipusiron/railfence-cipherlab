@@ -542,7 +542,11 @@ function printDecryptRailGrid() {
     return;
   }
   printGridDocument(grid, i18n.t('message.41'), [
-    document.getElementById("ciphertext").value,
+    i18n.t('message.40', [document.getElementById("ciphertext").value]),
+    i18n.t('message.24', [document.getElementById("decryptRailCount").value]),
+    i18n.t('message.27', [i18n.t(document.getElementById("decryptMethod").value === 'zigzag' ? 'message.25' : 'message.26')])
+  ], button, [
+    document.getElementById("decryptIntermediateText").textContent,
     document.querySelector("#plainResult span").textContent
-  ], button);
+  ]);
 }
