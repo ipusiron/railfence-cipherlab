@@ -79,3 +79,10 @@ test('extended Lab controls and safe frequency link are present', () => {
   assert.match(lab, /rel = 'noopener noreferrer'/);
   assert.doesNotMatch(lab, /calculateReadabilityScore|indexOf\(char\)/);
 });
+
+test('頻度分析（Day009）へは「#」より後ろで渡し、favicon を data: で指定する', () => {
+  const lab = fs.readFileSync(path.join(root, 'js', 'lab.js'), 'utf8');
+  assert.ok(lab.includes("'https://ipusiron.github.io/frequency-analyzer/#text=' + encodeURIComponent(cipher)"));
+  assert.ok(!lab.includes('?text='));
+  assert.ok(fs.readFileSync(path.join(root, 'index.html'), 'utf8').includes('<link rel="icon" href="data:," />'));
+});
