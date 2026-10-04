@@ -90,7 +90,8 @@ function renderTranspositionResult(ciphertext, target) {
   target.replaceChildren(uiNode('p', '', i18n.t('message.69', [verdict, result.letters, chi])));
   if (result.verdict === 'substitution' && Array.from(cipher).length <= 5000) {
     const link = document.createElement('a');
-    link.href = 'https://ipusiron.github.io/frequency-analyzer/?text=' + encodeURIComponent(cipher);
+    // 「#」より後ろで渡す（サーバーへ送られず、URLの長さの上限もない。Day009は#text=を先に読む）
+    link.href = 'https://ipusiron.github.io/frequency-analyzer/#text=' + encodeURIComponent(cipher);
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = i18n.t('message.70');
