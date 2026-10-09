@@ -357,6 +357,20 @@ The two previous sample ciphertexts in the Decrypt tab did not restore their ori
 Use the header button to switch between Japanese and English.
 Language selection follows `?lang=ja|en`, the saved preference, and then the browser language. Switching preserves the active tab, input, settings, results, and animation position.
 
+## 🎯 Use cases
+
+Ways of using this tool in particular
+
+- Confirming that it is a transposition, so letters stay and only positions change (transposition-cipher classes): encrypting WEAREDISCOVERED with 3 rails keeps the letters and rearranges them into WRIOREESVEADCED, and decrypting with the same number of rails returns the original. You can confirm, in the rearrangement of writing in a zigzag and reading by row, that it is a transposition that swaps positions rather than replacing letters
+- Confirming that 1 rail leaves the plaintext and the rails change the order (key classes): with 1 rail the ciphertext is the plaintext, and more rails change the order. The key is a single small number, the rail count, so you can confirm that the possible keys are few
+- Confirming that you can solve it by brute force without knowing the rails (cryptanalysis classes): even without the key (the rails), trying all of 2 to 6 rails and ranking by how English the result is puts the correct 3 rails first and returns WEAREDISCOVEREDFLEEATONCE. You can confirm that a transposition has few candidate keys and is easy to solve by brute force
+
+General uses
+
+- Learn how the Rail Fence cipher (a transposition) works in class or self-study
+- Make or read transposition ciphertext keyed by the rail count in puzzles and CTFs
+- Use it as material to explain the difference between transposition and substitution (changing positions versus changing letters)
+
 ## 🔒 Tool security
 
 Input is processed in the browser and is not transmitted externally. The application uses no external APIs, CDNs, fonts, or dependency libraries.
