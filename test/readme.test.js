@@ -41,6 +41,7 @@ const headings = [
   ["### 暗号化アルゴリズム","### Encryption algorithms"],
   ["### パフォーマンス","### Performance"],
   ["## 🔬 仕様と既知解答","## 🔬 Specification and known answers"],
+  ["## 🎯 ユースケース","## 🎯 Use cases"],
   ["## 🔒 このツールのセキュリティ","## 🔒 Tool security"],
   ["## 🧪 テスト","## 🧪 Tests"],
   ["## 📁 ディレクトリー構造","## 📁 Directory structure"],
@@ -131,4 +132,18 @@ test('Japanese YAML keeps baseline identity values and block-list structure', ()
   assert.doesNotMatch(read('README.en.md'), /<!--\s*---/);
   assert.ok(text.startsWith('[English](README.en.md) · 日本語'));
   assert.ok(read('README.en.md').startsWith('English · [日本語](README.md)'));
+});
+
+test('ユースケースの「このツールならではの使い方」を railfence-core.js で再計算（日英）', () => {
+  const C = require('../js/railfence-core.js');
+  const [ja, en] = docs.map(read);
+  assert.equal(C.encrypt('WEAREDISCOVERED', 3), 'WRIOREESVEADCED');
+  assert.equal(C.decrypt('WRIOREESVEADCED', 3), 'WEAREDISCOVERED');
+  assert.equal(C.encrypt('HELLO', 1), 'HELLO');
+  const bf = C.bruteForce(C.encrypt('WEAREDISCOVEREDFLEEATONCE', 3), 2, 6, ['standard'], false);
+  assert.equal(bf[0].key.rails, 3);
+  assert.equal(bf[0].text, 'WEAREDISCOVEREDFLEEATONCE');
+  for (const md of [ja, en]) {
+    assert.ok(md.includes('WRIOREESVEADCED') && md.includes('WEAREDISCOVEREDFLEEATONCE'));
+  }
 });
